@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cashflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c0e;
+  --surface: #131316;
+  --surface2: #1c1c21;
+  --surface3: #242429;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.11);
+  --text: #eeecea;
+  --text2: #888580;
+  --text3: #4a4845;
+  --green: #3ecf8e;
+  --green-dim: rgba(62,207,142,0.1);
+  --green-border: rgba(62,207,142,0.25);
+  --red: #f06c6c;
+  --red-dim: rgba(240,108,108,0.1);
+  --red-border: rgba(240,108,108,0.25);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.1);
+  --amber-border: rgba(245,166,35,0.25);
+  --blue: #5b9cf6;
+  --blue-dim: rgba(91,156,246,0.1);
+  --blue-border: rgba(91,156,246,0.25);
+  --gold: #c9a96e;
+  --gold-dim: rgba(201,169,110,0.08);
+  --r: 10px;
+  --rs: 7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+
+/* ── AUTH SCREEN ── */
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--bg)}
+.auth-box{width:100%;max-width:380px}
+.auth-logo{font-family:'Instrument Serif',serif;font-size:36px;color:var(--gold);margin-bottom:8px;letter-spacing:-0.5px}
+.auth-sub{font-size:13px;color:var(--text3);margin-bottom:36px}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border2);margin-bottom:28px}
+.auth-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.auth-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.auth-form{display:none}
+.auth-form.active{display:block}
+.f-row{margin-bottom:14px}
+.f-row label{display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:6px}
+.f-row input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s}
+.f-row input:focus{border-color:var(--gold)}
+.auth-btn{width:100%;padding:12px;background:var(--gold);border:none;border-radius:var(--rs);color:#0c0c0e;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;transition:opacity .15s}
+.auth-btn:hover{opacity:.88}
+.auth-error{font-size:12px;color:var(--red);margin-top:10px;min-height:18px}
+
+/* ── APP LAYOUT ── */
+#app{display:none;height:100vh;overflow:hidden;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:20px}
+.brand{font-family:'Instrument Serif',serif;font-size:22px;color:var(--gold);letter-spacing:-.3px}
+.nav-tabs{display:flex;gap:2px}
+.nav-tab{padding:6px 14px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:var(--rs);border:none;background:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.nav-tab:hover{color:var(--text);background:var(--surface2)}
+.nav-tab.active{color:var(--gold);background:var(--gold-dim)}
+.user-area{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text3)}
+.logout-btn{background:none;border:1px solid var(--border2);color:var(--text3);padding:5px 12px;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.logout-btn:hover{border-color:var(--red-border);color:var(--red)}
+
+/* content area */
+.content{flex:1;overflow:hidden;display:flex}
+.page{display:none;width:100%;overflow-y:auto}
+.page.active{display:flex;flex-direction:column}
+
+/* ── MONTH SIDEBAR ── */
+.mes-layout{display:grid;grid-template-columns:200px 1fr;height:100%;overflow:hidden}
+.mes-sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0}
+.sidebar-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);padding:0 16px 10px}
+.mes-item{padding:9px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;display:flex;align-items:center;justify-content:space-between;border-left:2px solid transparent}
+.mes-item:hover{color:var(--text);background:var(--surface2)}
+.mes-item.active{color:var(--gold);background:var(--gold-dim);border-left-color:var(--gold)}
+.mes-item-dot{width:6px;height:6px;border-radius:50%;background:var(--green);opacity:0}
+.mes-item.has-data .mes-item-dot{opacity:1}
+.add-mes-btn{margin:10px 12px 0;padding:8px;background:none;border:1px dashed var(--border2);border-radius:var(--rs);color:var(--text3);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;width:calc(100% - 24px);transition:all .15s}
+.add-mes-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── MES CONTENT ── */
+.mes-content{overflow-y:auto;padding:28px}
+.mes-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.mes-title{font-family:'Instrument Serif',serif;font-size:28px;color:var(--text);letter-spacing:-.3px}
+.mes-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:700px){.mes-stats{grid-template-columns:repeat(2,1fr)}.mes-layout{grid-template-columns:1fr}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:600;letter-spacing:-.5px}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ── SECCIÓN INGRESOS ── */
+.section{margin-bottom:32px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3)}
+.add-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+.add-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ingreso card */
+.ingreso-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+.ingreso-card:hover{border-color:var(--border2)}
+.ingreso-card.pagado{border-color:var(--green-border)}
+.ingreso-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}
+.pagado-toggle{width:24px;height:24px;border-radius:50%;border:2px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:12px}
+.pagado-toggle:hover{border-color:var(--green)}
+.pagado-toggle.on{background:var(--green);border-color:var(--green);color:#0c0c0e;font-weight:700}
+.ingreso-info{flex:1;min-width:0}
+.ingreso-cliente{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ingreso-fecha{font-size:11px;color:var(--text3);margin-top:1px}
+.ingreso-total{font-size:16px;font-weight:600;color:var(--text);text-align:right;white-space:nowrap}
+.ingreso-cashflow{font-size:11px;color:var(--green);text-align:right;margin-top:1px}
+.ingreso-chevron{color:var(--text3);font-size:12px;transition:transform .2s;margin-left:8px}
+.ingreso-card.open .ingreso-chevron{transform:rotate(180deg)}
+
+/* bolsas */
+.bolsas-area{padding:0 16px 14px;border-top:1px solid var(--border)}
+.bolsas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:12px 0}
+.bolsa-chip{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.bolsa-nombre{font-size:11px;color:var(--text3);font-weight:500}
+.bolsa-monto{font-size:15px;font-weight:600;color:var(--text)}
+.bolsa-chip.cashflow{border-color:var(--green-border);background:var(--green-dim)}
+.bolsa-chip.cashflow .bolsa-nombre{color:var(--green)}
+.bolsa-chip.cashflow .bolsa-monto{color:var(--green)}
+.bolsas-actions{display:flex;gap:8px;margin-top:10px}
+.action-sm{background:none;border:1px solid var(--border2);color:var(--text3);padding:5px 12px;border-radius:var(--rs);font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+.action-sm:hover{border-color:var(--border2);color:var(--text)}
+.action-sm.danger:hover{border-color:var(--red-border);color:var(--red)}
+
+/* gastos */
+.gasto-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;background:var(--surface)}
+.gasto-prio{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.prio-alta{background:var(--red)}
+.prio-media{background:var(--amber)}
+.prio-baja{background:var(--text3)}
+.gasto-info{flex:1;min-width:0}
+.gasto-desc{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gasto-fecha{font-size:11px;color:var(--text3);margin-top:1px}
+.gasto-amount{font-size:14px;font-weight:600;color:var(--red);white-space:nowrap}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;font-size:14px;line-height:1;transition:color .15s}
+.del-btn:hover{color:var(--red)}
+
+/* cashflow plan */
+.cf-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.cf-header{padding:12px 16px;background:var(--green-dim);border-bottom:1px solid var(--green-border);display:flex;justify-content:space-between;align-items:center}
+.cf-name{font-size:13px;font-weight:500;color:var(--green)}
+.cf-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid}
+.badge-ok{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.badge-warn{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}
+.cf-alloc{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.cf-alloc:last-child{border-bottom:none}
+.cf-alloc-name{color:var(--text2)}
+.cf-alloc-date{font-size:11px;color:var(--text3);margin-top:1px}
+.cf-alloc-amt{font-weight:500;color:var(--red)}
+.cf-reserved{padding:10px 16px;display:flex;justify-content:space-between;font-size:12px;color:var(--green);background:var(--green-dim);border-top:1px solid var(--green-border)}
+.cf-leftover{padding:10px 16px;display:flex;justify-content:space-between;font-size:12px;color:var(--amber);background:var(--amber-dim);border-top:1px solid var(--amber-border)}
+.no-cf{text-align:center;padding:32px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--r)}
+
+/* ── ANUAL ── */
+.anual-content{padding:28px;overflow-y:auto}
+.anual-header{margin-bottom:24px}
+.anual-title{font-family:'Instrument Serif',serif;font-size:28px;color:var(--text);letter-spacing:-.3px;margin-bottom:4px}
+.anual-year{font-size:13px;color:var(--text3)}
+.anual-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:600px){.anual-stats{grid-template-columns:1fr}}
+
+/* chart */
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:28px}
+.chart-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:16px}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-wrap{width:100%;display:flex;flex-direction:column;justify-content:flex-end;flex:1}
+.bar{width:100%;border-radius:3px 3px 0 0;min-height:3px;transition:height .3s}
+.bar-facturado{background:var(--blue-dim);border:1px solid var(--blue-border)}
+.bar-label{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap}
+
+/* tabla anual */
+.anual-table{width:100%;border-collapse:collapse;font-size:13px}
+.anual-table th{text-align:left;padding:10px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-bottom:1px solid var(--border)}
+.anual-table td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.anual-table tr:last-child td{border-bottom:none}
+.anual-table tr:hover td{background:var(--surface2)}
+.anual-table .mes-link{color:var(--text);font-weight:500;cursor:pointer;transition:color .15s}
+.anual-table .mes-link:hover{color:var(--gold)}
+.anual-table .amount{font-weight:600;font-variant-numeric:tabular-nums}
+.tag-pagado{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.tag-pendiente{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border);font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s;padding:20px}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:24px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;transform:translateY(8px);transition:transform .2s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text);margin-bottom:20px;letter-spacing:-.2px}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-btn{flex:1;padding:10px;border-radius:var(--rs);border:1px solid;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.modal-btn-primary{background:var(--gold);border-color:var(--gold);color:#0c0c0e}
+.modal-btn-primary:hover{opacity:.88}
+.modal-btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2)}
+.modal-btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+
+/* bolsas editor */
+.bolsa-editor-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-bottom:8px}
+.bolsa-editor-row input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;outline:none;transition:border-color .2s;width:100%}
+.bolsa-editor-row input:focus{border-color:var(--gold)}
+.cf-check{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);white-space:nowrap}
+.cf-check input[type=checkbox]{accent-color:var(--green);width:14px;height:14px}
+.rem-bolsa{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 8px;font-size:16px;line-height:1;transition:color .15s;border-radius:4px}
+.rem-bolsa:hover{color:var(--red)}
+.add-bolsa-btn{background:none;border:1px dashed var(--border2);border-radius:var(--rs);color:var(--text3);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;padding:8px;width:100%;margin-top:4px;transition:all .15s}
+.add-bolsa-btn:hover{border-color:var(--gold);color:var(--gold)}
+.bolsa-editor-header{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:6px}
+.bolsa-editor-header span{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3)}
+
+/* cashflow summary */
+.cf-summary-box{background:var(--amber-dim);border:1px solid var(--amber-border);border-radius:var(--r);padding:16px;margin-top:16px}
+.cf-summary-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--amber);margin-bottom:10px}
+.cf-summary-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(245,166,35,.15)}
+.cf-summary-row:last-child{border-bottom:none}
+.cf-summary-label{color:var(--text2)}
+.cf-summary-amt{font-weight:600;color:var(--amber)}
+
+/* utils */
+.divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+.empty{text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--r)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen{display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">Cashflow</div>
+    <div class="auth-sub">Gestión inteligente de flujo de caja</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="showAuthTab('login')">Iniciar sesión</div>
+      <div class="auth-tab" onclick="showAuthTab('registro')">Crear cuenta</div>
+    </div>
+    <div class="auth-form active" id="form-login">
+      <div class="f-row"><label>Correo</label><input type="email" id="l-email" placeholder="tu@correo.com"></div>
+      <div class="f-row"><label>Contraseña</label><input type="password" id="l-pass" placeholder="••••••••"></div>
+      <button class="auth-btn" onclick="login()">Entrar</button>
+      <div class="auth-error" id="login-err"></div>
+    </div>
+    <div class="auth-form" id="form-registro">
+      <div class="f-row"><label>Correo</label><input type="email" id="r-email" placeholder="tu@correo.com"></div>
+      <div class="f-row"><label>Contraseña</label><input type="password" id="r-pass" placeholder="Mínimo 6 caracteres"></div>
+      <button class="auth-btn" onclick="registro()">Crear cuenta</button>
+      <div class="auth-error" id="reg-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;flex-direction:column;height:100vh">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="brand">Cashflow</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showPage('mes')">Mes</button>
+        <button class="nav-tab" onclick="showPage('anual')">Año</button>
+      </div>
+    </div>
+    <div class="user-area">
+      <span id="user-email-label"></span>
+      <button class="logout-btn" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- MES PAGE -->
+    <div class="page active" id="page-mes">
+      <div class="mes-layout">
+        <div class="mes-sidebar">
+          <div class="sidebar-title">Meses</div>
+          <div id="mes-list"></div>
+          <button class="add-mes-btn" onclick="openNuevoMes()">＋ Nuevo mes</button>
+        </div>
+        <div class="mes-content" id="mes-content">
+          <div class="empty" style="margin-top:60px">Selecciona o crea un mes para comenzar.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANUAL PAGE -->
+    <div class="page" id="page-anual">
+      <div class="anual-content" id="anual-content">
+        <div class="empty" style="margin-top:60px">Cargando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="modal-overlay" onclick="e=>e.target===this&&closeModal()">
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, collection, getDocs, getDoc, setDoc, deleteDoc, updateDoc, onSnapshot, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD8JS-8fwIGWzX29bOVHc-yse3qt70X2cM",
+  authDomain: "cashflow-a7fcc.firebaseapp.com",
+  projectId: "cashflow-a7fcc",
+  storageBucket: "cashflow-a7fcc.firebasestorage.app",
+  messagingSenderId: "280921673419",
+  appId: "1:280921673419:web:06b196662bafa52620d54e"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+// ── STATE ──
+let uid = null;
+let meses = []; // [{id, nombre, orden}]
+let activeMesId = null;
+let mesData = {}; // mesId -> {ingresos:[], gastos:[]}
+let unsubMes = {};
+
+// ── AUTH ──
+window.showAuthTab = (tab) => {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='registro')));
+  document.getElementById('form-login').classList.toggle('active', tab==='login');
+  document.getElementById('form-registro').classList.toggle('active', tab==='registro');
+};
+
+window.login = async () => {
+  const e = document.getElementById('l-email').value.trim();
+  const p = document.getElementById('l-pass').value;
+  document.getElementById('login-err').textContent = '';
+  try { await signInWithEmailAndPassword(auth, e, p); }
+  catch(err) { document.getElementById('login-err').textContent = tradErr(err.code); }
+};
+
+window.registro = async () => {
+  const e = document.getElementById('r-email').value.trim();
+  const p = document.getElementById('r-pass').value;
+  document.getElementById('reg-err').textContent = '';
+  try { await createUserWithEmailAndPassword(auth, e, p); }
+  catch(err) { document.getElementById('reg-err').textContent = tradErr(err.code); }
+};
+
+window.logout = () => signOut(auth);
+
+function tradErr(code) {
+  const map = {
+    'auth/invalid-email':'Correo inválido',
+    'auth/user-not-found':'No existe esa cuenta',
+    'auth/wrong-password':'Contraseña incorrecta',
+    'auth/invalid-credential':'Correo o contraseña incorrectos',
+    'auth/email-already-in-use':'Ese correo ya está registrado',
+    'auth/weak-password':'La contraseña debe tener al menos 6 caracteres'
+  };
+  return map[code] || 'Error: ' + code;
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    uid = user.uid;
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('user-email-label').textContent = user.email;
+    await loadMeses();
+  } else {
+    uid = null;
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+// ── NAVIGATION ──
+window.showPage = (page) => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (page === 'anual') renderAnual();
+};
+
+// ── MESES ──
+async function loadMeses() {
+  const snap = await getDocs(collection(db, 'users', uid, 'meses'));
+  meses = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.orden - b.orden);
+  renderSidebar();
+  if (meses.length > 0 && !activeMesId) selectMes(meses[meses.length-1].id);
+}
+
+function renderSidebar() {
+  const list = document.getElementById('mes-list');
+  if (meses.length === 0) { list.innerHTML = '<div style="padding:12px 16px;font-size:12px;color:var(--text3)">Sin meses aún</div>'; return; }
+  list.innerHTML = meses.map(m => {
+    const data = mesData[m.id];
+    const hasData = data && (data.ingresos.length > 0 || data.gastos.length > 0);
+    return `<div class="mes-item ${m.id===activeMesId?'active':''} ${hasData?'has-data':''}" onclick="selectMes('${m.id}')">
+      <span>${m.nombre}</span>
+      <span class="mes-item-dot"></span>
+    </div>`;
+  }).join('');
+}
+
+window.selectMes = async (id) => {
+  activeMesId = id;
+  renderSidebar();
+  await loadMesData(id);
+  renderMes();
+};
+
+async function loadMesData(id) {
+  if (mesData[id]) return;
+  const [ingSnap, gasSnap] = await Promise.all([
+    getDocs(collection(db, 'users', uid, 'meses', id, 'ingresos')),
+    getDocs(collection(db, 'users', uid, 'meses', id, 'gastos'))
+  ]);
+  mesData[id] = {
+    ingresos: ingSnap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>a.fecha?.localeCompare?.(b.fecha)||0),
+    gastos: gasSnap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>a.fecha?.localeCompare?.(b.fecha)||0)
+  };
+}
+
+window.openNuevoMes = () => {
+  const MESES_NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const now = new Date();
+  const opts = [];
+  for (let i = 0; i < 12; i++) {
+    const m = (now.getMonth() + i) % 12;
+    const y = now.getFullYear() + Math.floor((now.getMonth() + i) / 12);
+    opts.push(`<option value="${MESES_NOMBRES[m]} ${y}">${MESES_NOMBRES[m]} ${y}</option>`);
+  }
+  showModal(`<div class="modal-title">Nuevo mes</div>
+    <div class="f-row"><label>Selecciona el mes</label>
+    <select id="nm-select" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none">${opts.join('')}</select></div>
+    <div style="font-size:12px;color:var(--text3);margin-top:4px">O escribe un nombre personalizado:</div>
+    <div class="f-row" style="margin-top:8px"><input id="nm-custom" type="text" placeholder="Ej: Q1 2025, Freelance Mayo..." style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="crearMes()">Crear</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+};
+
+window.crearMes = async () => {
+  const custom = document.getElementById('nm-custom').value.trim();
+  const nombre = custom || document.getElementById('nm-select').value;
+  if (!nombre) return;
+  const id = Date.now().toString();
+  await setDoc(doc(db, 'users', uid, 'meses', id), { nombre, orden: Date.now() });
+  meses.push({ id, nombre, orden: Date.now() });
+  mesData[id] = { ingresos: [], gastos: [] };
+  closeModal();
+  renderSidebar();
+  selectMes(id);
+};
+
+// ── RENDER MES ──
+function renderMes() {
+  const mes = meses.find(m => m.id === activeMesId);
+  const data = mesData[activeMesId];
+  if (!mes || !data) return;
+
+  const totalFacturado = data.ingresos.reduce((s,i) => s + (i.total||0), 0);
+  const totalCobrado = data.ingresos.filter(i=>i.pagado).reduce((s,i) => s + (i.total||0), 0);
+  const totalCashflow = data.ingresos.filter(i=>i.pagado).reduce((s,i) => {
+    const cf = (i.bolsas||[]).find(b=>b.esCashflow);
+    return s + (cf ? cf.monto : 0);
+  }, 0);
+  const totalGastos = data.gastos.reduce((s,g) => s + (g.monto||0), 0);
+
+  const html = `
+    <div class="mes-header">
+      <div class="mes-title">${mes.nombre}</div>
+      <button class="action-sm danger" onclick="eliminarMes()">Eliminar mes</button>
+    </div>
+
+    <div class="mes-stats">
+      <div class="stat-card">
+        <div class="stat-label">Facturado</div>
+        <div class="stat-value">${fmt(totalFacturado)}</div>
+        <div class="stat-sub">${data.ingresos.length} ingreso(s)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cobrado</div>
+        <div class="stat-value" style="color:var(--green)">${fmt(totalCobrado)}</div>
+        <div class="stat-sub">${data.ingresos.filter(i=>i.pagado).length} pagado(s)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cashflow disponible</div>
+        <div class="stat-value" style="color:var(--amber)">${fmt(totalCashflow)}</div>
+        <div class="stat-sub">De ingresos cobrados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Gastos del mes</div>
+        <div class="stat-value" style="color:var(--red)">${fmt(totalGastos)}</div>
+        <div class="stat-sub">${data.gastos.length} gasto(s)</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Ingresos</div>
+        <button class="add-btn" onclick="openNuevoIngreso()">+ Agregar ingreso</button>
+      </div>
+      ${data.ingresos.length === 0
+        ? '<div class="empty">Sin ingresos este mes. Agrega el primero.</div>'
+        : data.ingresos.map(i => renderIngresoCard(i)).join('')
+      }
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Gastos</div>
+        <button class="add-btn" onclick="openNuevoGasto()">+ Agregar gasto</button>
+      </div>
+      ${data.gastos.length === 0
+        ? '<div class="empty">Sin gastos registrados.</div>'
+        : data.gastos.map(g => renderGastoRow(g)).join('')
+      }
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section">
+      <div class="section-title" style="margin-bottom:14px">Plan de cashflow</div>
+      ${renderCashflowPlan(data)}
+    </div>
+  `;
+
+  document.getElementById('mes-content').innerHTML = html;
+}
+
+function renderIngresoCard(ing) {
+  const cf = (ing.bolsas||[]).find(b=>b.esCashflow);
+  const cfAmt = cf ? cf.monto : 0;
+  return `<div class="ingreso-card ${ing.pagado?'pagado':''}" id="ic-${ing.id}">
+    <div class="ingreso-header" onclick="toggleIngreso('${ing.id}')">
+      <button class="pagado-toggle ${ing.pagado?'on':''}" onclick="event.stopPropagation();togglePagado('${ing.id}')" title="${ing.pagado?'Marcar pendiente':'Marcar como cobrado'}">
+        ${ing.pagado?'✓':''}
+      </button>
+      <div class="ingreso-info">
+        <div class="ingreso-cliente">${ing.cliente}</div>
+        <div class="ingreso-fecha">${fmtDate(ing.fecha)} ${ing.pagado?'· <span style="color:var(--green);font-weight:500">Cobrado</span>':'· Pendiente'}</div>
+      </div>
+      <div>
+        <div class="ingreso-total">${fmt(ing.total||0)}</div>
+        ${cfAmt>0?`<div class="ingreso-cashflow">CF: ${fmt(cfAmt)}</div>`:''}
+      </div>
+      <span class="ingreso-chevron">▼</span>
+    </div>
+    <div class="bolsas-area" style="display:none" id="bolsas-${ing.id}">
+      ${renderBolsas(ing)}
+      <div class="bolsas-actions">
+        <button class="action-sm" onclick="openEditarIngreso('${ing.id}')">Editar</button>
+        <button class="action-sm danger" onclick="eliminarIngreso('${ing.id}')">Eliminar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderBolsas(ing) {
+  const bolsas = ing.bolsas || [];
+  if (bolsas.length === 0) return '<div style="font-size:12px;color:var(--text3);padding:8px 0">Sin bolsas definidas.</div>';
+  return `<div class="bolsas-grid">${bolsas.map(b=>`
+    <div class="bolsa-chip ${b.esCashflow?'cashflow':''}">
+      <div class="bolsa-nombre">${b.nombre}${b.esCashflow?' ✦':''}</div>
+      <div class="bolsa-monto">${fmt(b.monto)}</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderGastoRow(g) {
+  return `<div class="gasto-row">
+    <div class="gasto-prio prio-${g.prioridad||'media'}"></div>
+    <div class="gasto-info">
+      <div class="gasto-desc">${g.descripcion}</div>
+      <div class="gasto-fecha">${fmtDate(g.fecha)} · ${g.prioridad||'media'}</div>
+    </div>
+    <div class="gasto-amount">−${fmt(g.monto)}</div>
+    <button class="del-btn" onclick="eliminarGasto('${g.id}')">✕</button>
+  </div>`;
+}
+
+function renderCashflowPlan(data) {
+  const ingresosCf = data.ingresos.filter(i => {
+    const cf = (i.bolsas||[]).find(b=>b.esCashflow);
+    return cf && cf.monto > 0 && i.pagado;
+  });
+  if (ingresosCf.length === 0 && data.gastos.length === 0) {
+    return '<div class="no-cf">Marca ingresos como cobrados y define su bolsa de cashflow para ver el plan.</div>';
+  }
+  if (ingresosCf.length === 0) {
+    return '<div class="no-cf">No hay ingresos cobrados con bolsa de cashflow definida.</div>';
+  }
+
+  const expenses = [...data.gastos].sort((a,b)=>{
+    const p={alta:0,media:1,baja:2};
+    if(a.fecha!==b.fecha) return (a.fecha||'').localeCompare(b.fecha||'');
+    return (p[a.prioridad]||1)-(p[b.prioridad]||1);
+  });
+
+  let incomeWork = ingresosCf.map(i=>{
+    const cf = i.bolsas.find(b=>b.esCashflow);
+    return {...i, cfAmount: cf.monto, remaining: cf.monto, allocations:[]};
+  });
+  let expWork = expenses.map(e=>({...e, covered:false, uncovered:0}));
+
+  for (let exp of expWork) {
+    let cands = incomeWork.filter(i=>i.remaining>0&&(i.fecha||'')<=(exp.fecha||''));
+    if (!cands.length) cands = incomeWork.filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    else cands.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    // prefer single source
+    const single = cands.find(i=>i.remaining>=exp.monto);
+    if (single) {
+      single.remaining -= exp.monto;
+      single.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:exp.monto,prioridad:exp.prioridad});
+      exp.covered = true;
+    } else {
+      let rem = exp.monto;
+      for (let inc of cands) {
+        if (rem<=0) break;
+        const take=Math.min(inc.remaining,rem);
+        inc.remaining-=take; rem-=take;
+        inc.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:take,prioridad:exp.prioridad});
+      }
+      if (rem<=0) exp.covered=true; else exp.uncovered=rem;
+    }
+  }
+
+  const totalCf = incomeWork.reduce((s,i)=>s+i.cfAmount,0);
+  const totalGastos = expenses.reduce((s,e)=>s+e.monto,0);
+  const totalSobrante = incomeWork.reduce((s,i)=>s+i.remaining,0);
+  const uncovered = expWork.filter(e=>!e.covered);
+
+  let html = incomeWork.map(inc=>{
+    const reserved = inc.cfAmount - inc.remaining;
+    const badge = inc.remaining>0
+      ? `<span class="cf-badge badge-ok">Sobra ${fmt(inc.remaining)}</span>`
+      : `<span class="cf-badge badge-warn">Sin sobrante</span>`;
+    let h = `<div class="cf-card">
+      <div class="cf-header">
+        <div><div class="cf-name">💰 ${inc.cliente}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">CF disponible: ${fmt(inc.cfAmount)} · cobrado el ${fmtDate(inc.fecha)}</div></div>
+        ${badge}
+      </div>`;
+    if (!inc.allocations.length) {
+      h += `<div class="cf-alloc"><span style="color:var(--text3)">Sin gastos asignados.</span></div>`;
+    } else {
+      inc.allocations.forEach(a=>{
+        const pc=a.prioridad==='alta'?'var(--red)':a.prioridad==='media'?'var(--amber)':'var(--text3)';
+        h+=`<div class="cf-alloc"><div><div class="cf-alloc-name">${a.desc}</div><div class="cf-alloc-date">Fecha: ${fmtDate(a.fecha)} · <span style="color:${pc}">${a.prioridad||'media'}</span></div></div><div class="cf-alloc-amt">−${fmt(a.amount)}</div></div>`;
+      });
+    }
+    if (reserved>0) h+=`<div class="cf-reserved"><span>Reservado para gastos</span><span>${fmt(reserved)}</span></div>`;
+    if (inc.remaining>0) h+=`<div class="cf-leftover"><span>✦ Sobrante libre</span><span>${fmt(inc.remaining)}</span></div>`;
+    h+=`</div>`;
+    return h;
+  }).join('');
+
+  if (uncovered.length>0) {
+    html+=`<div style="background:var(--red-dim);border:1px solid var(--red-border);border-radius:var(--rs);padding:12px 16px;font-size:13px;color:var(--red);margin-top:12px">⚠️ Gastos sin cobertura: ${uncovered.map(e=>`${e.descripcion} (faltan ${fmt(e.uncovered||e.monto)})`).join(', ')}</div>`;
+  }
+
+  if (totalSobrante>0) {
+    html+=`<div class="cf-summary-box"><div class="cf-summary-title">✦ Resumen de sobrantes</div>
+      ${incomeWork.filter(i=>i.remaining>0).map(i=>`<div class="cf-summary-row"><div class="cf-summary-label">${i.cliente}</div><div class="cf-summary-amt">${fmt(i.remaining)}</div></div>`).join('')}
+    </div>`;
+  }
+
+  return html;
+}
+
+// ── TOGGLE INGRESO ──
+window.toggleIngreso = (id) => {
+  const card = document.getElementById('ic-'+id);
+  const bolsas = document.getElementById('bolsas-'+id);
+  const isOpen = card.classList.contains('open');
+  card.classList.toggle('open', !isOpen);
+  bolsas.style.display = isOpen ? 'none' : 'block';
+};
+
+window.togglePagado = async (id) => {
+  const data = mesData[activeMesId];
+  const ing = data.ingresos.find(i=>i.id===id);
+  if (!ing) return;
+  ing.pagado = !ing.pagado;
+  await updateDoc(doc(db,'users',uid,'meses',activeMesId,'ingresos',id), {pagado: ing.pagado});
+  renderMes();
+};
+
+// ── NUEVO INGRESO ──
+window.openNuevoIngreso = () => {
+  const today = new Date().toISOString().split('T')[0];
+  showModal(buildIngresoModal(null, today));
+};
+
+window.openEditarIngreso = (id) => {
+  const ing = mesData[activeMesId].ingresos.find(i=>i.id===id);
+  if (!ing) return;
+  showModal(buildIngresoModal(ing, ing.fecha));
+};
+
+function buildIngresoModal(ing, fecha) {
+  const bolsas = ing?.bolsas || [{nombre:'Nómina',monto:'',esCashflow:false},{nombre:'Impuestos',monto:'',esCashflow:false},{nombre:'Cashflow',monto:'',esCashflow:true}];
+  const bolsasHTML = bolsas.map((b,i)=>`
+    <div class="bolsa-editor-row" id="brow-${i}">
+      <input type="text" placeholder="Nombre bolsa" value="${b.nombre}" id="bn-${i}">
+      <input type="number" placeholder="Monto" value="${b.monto||''}" id="bm-${i}" style="max-width:110px">
+      <div class="cf-check"><input type="checkbox" id="bc-${i}" ${b.esCashflow?'checked':''}><label for="bc-${i}" style="cursor:pointer;color:var(--green)">CF</label></div>
+      <button class="rem-bolsa" onclick="remBolsa(${i})">×</button>
+    </div>`).join('');
+
+  return `<div class="modal-title">${ing?'Editar ingreso':'Nuevo ingreso'}</div>
+    <div class="f-row"><label>Cliente / Fuente</label><input id="ing-cliente" type="text" value="${ing?.cliente||''}" placeholder="Nombre del cliente"></div>
+    <div class="f-row"><label>Monto total</label><input id="ing-total" type="number" value="${ing?.total||''}" placeholder="0.00"></div>
+    <div class="f-row"><label>Fecha esperada de cobro</label><input id="ing-fecha" type="date" value="${fecha}"></div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin:16px 0 10px">Distribución por bolsas</div>
+    <div class="bolsa-editor-header">
+      <span>Nombre</span><span>Monto</span><span style="color:var(--green)">CF</span>
+    </div>
+    <div id="bolsas-editor">${bolsasHTML}</div>
+    <button class="add-bolsa-btn" onclick="addBolsa()">＋ Agregar bolsa</button>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">Marca ✦ CF en la bolsa que va al cashflow</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="guardarIngreso('${ing?.id||''}')">Guardar</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`;
+}
+
+window.addBolsa = () => {
+  const container = document.getElementById('bolsas-editor');
+  const i = container.children.length;
+  const div = document.createElement('div');
+  div.className = 'bolsa-editor-row';
+  div.id = `brow-${i}`;
+  div.innerHTML = `<input type="text" placeholder="Nombre bolsa" id="bn-${i}">
+    <input type="number" placeholder="Monto" id="bm-${i}" style="max-width:110px">
+    <div class="cf-check"><input type="checkbox" id="bc-${i}"><label for="bc-${i}" style="cursor:pointer;color:var(--green)">CF</label></div>
+    <button class="rem-bolsa" onclick="remBolsa(${i})">×</button>`;
+  container.appendChild(div);
+};
+
+window.remBolsa = (i) => {
+  const row = document.getElementById('brow-'+i);
+  if (row) row.remove();
+};
+
+window.guardarIngreso = async (existingId) => {
+  const cliente = document.getElementById('ing-cliente').value.trim();
+  const total = parseFloat(document.getElementById('ing-total').value);
+  const fecha = document.getElementById('ing-fecha').value;
+  if (!cliente || !fecha) return alert('Completa cliente y fecha.');
+
+  const rows = document.querySelectorAll('#bolsas-editor .bolsa-editor-row');
+  const bolsas = [];
+  rows.forEach((row, i) => {
+    const nombre = document.getElementById(`bn-${i}`)?.value?.trim();
+    const monto = parseFloat(document.getElementById(`bm-${i}`)?.value) || 0;
+    const esCashflow = document.getElementById(`bc-${i}`)?.checked || false;
+    if (nombre) bolsas.push({nombre, monto, esCashflow});
+  });
+
+  const id = existingId || Date.now().toString();
+  const obj = {cliente, total: total||0, fecha, bolsas, pagado: false};
+
+  if (existingId) {
+    const existing = mesData[activeMesId].ingresos.find(i=>i.id===existingId);
+    obj.pagado = existing?.pagado || false;
+  }
+
+  await setDoc(doc(db,'users',uid,'meses',activeMesId,'ingresos',id), obj);
+
+  if (existingId) {
+    const idx = mesData[activeMesId].ingresos.findIndex(i=>i.id===existingId);
+    mesData[activeMesId].ingresos[idx] = {id, ...obj};
+  } else {
+    mesData[activeMesId].ingresos.push({id, ...obj});
+  }
+
+  closeModal();
+  renderMes();
+  renderSidebar();
+};
+
+window.eliminarIngreso = async (id) => {
+  if (!confirm('¿Eliminar este ingreso?')) return;
+  await deleteDoc(doc(db,'users',uid,'meses',activeMesId,'ingresos',id));
+  mesData[activeMesId].ingresos = mesData[activeMesId].ingresos.filter(i=>i.id!==id);
+  renderMes();
+};
+
+// ── GASTOS ──
+window.openNuevoGasto = () => {
+  const today = new Date().toISOString().split('T')[0];
+  showModal(`<div class="modal-title">Nuevo gasto</div>
+    <div class="f-row"><label>Descripción</label><input id="g-desc" type="text" placeholder="Ej: Renta, luz, tarjeta..."></div>
+    <div class="f-row"><label>Monto</label><input id="g-monto" type="number" placeholder="0.00"></div>
+    <div class="f-row"><label>Fecha límite</label><input id="g-fecha" type="date" value="${today}"></div>
+    <div class="f-row"><label>Prioridad</label>
+      <select id="g-prio" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none">
+        <option value="alta">Alta — No puede esperar</option>
+        <option value="media" selected>Media — Flexible</option>
+        <option value="baja">Baja — Puede esperar</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="guardarGasto()">Guardar</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+};
+
+window.guardarGasto = async () => {
+  const descripcion = document.getElementById('g-desc').value.trim();
+  const monto = parseFloat(document.getElementById('g-monto').value);
+  const fecha = document.getElementById('g-fecha').value;
+  const prioridad = document.getElementById('g-prio').value;
+  if (!descripcion || !monto || !fecha) return alert('Completa todos los campos.');
+  const id = Date.now().toString();
+  const obj = {descripcion, monto, fecha, prioridad};
+  await setDoc(doc(db,'users',uid,'meses',activeMesId,'gastos',id), obj);
+  mesData[activeMesId].gastos.push({id,...obj});
+  mesData[activeMesId].gastos.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  closeModal();
+  renderMes();
+};
+
+window.eliminarGasto = async (id) => {
+  if (!confirm('¿Eliminar este gasto?')) return;
+  await deleteDoc(doc(db,'users',uid,'meses',activeMesId,'gastos',id));
+  mesData[activeMesId].gastos = mesData[activeMesId].gastos.filter(g=>g.id!==id);
+  renderMes();
+};
+
+window.eliminarMes = async () => {
+  const mes = meses.find(m=>m.id===activeMesId);
+  if (!confirm(`¿Eliminar "${mes?.nombre}"? Se borrarán todos sus datos.`)) return;
+  await deleteDoc(doc(db,'users',uid,'meses',activeMesId));
+  meses = meses.filter(m=>m.id!==activeMesId);
+  delete mesData[activeMesId];
+  activeMesId = null;
+  renderSidebar();
+  document.getElementById('mes-content').innerHTML = '<div class="empty" style="margin-top:60px">Selecciona o crea un mes.</div>';
+};
+
+// ── ANUAL ──
+async function renderAnual() {
+  const container = document.getElementById('anual-content');
+  container.innerHTML = '<div class="empty" style="margin-top:60px"><div class="spinner"></div></div>';
+
+  // load all months data
+  for (const m of meses) {
+    if (!mesData[m.id]) await loadMesData(m.id);
+  }
+
+  const year = new Date().getFullYear();
+  const totalFacturado = meses.reduce((s,m)=>s+(mesData[m.id]?.ingresos||[]).reduce((ss,i)=>ss+(i.total||0),0),0);
+  const totalCobrado = meses.reduce((s,m)=>s+(mesData[m.id]?.ingresos||[]).filter(i=>i.pagado).reduce((ss,i)=>ss+(i.total||0),0),0);
+  const totalCf = meses.reduce((s,m)=>s+(mesData[m.id]?.ingresos||[]).filter(i=>i.pagado).reduce((ss,i)=>{
+    const cf=(i.bolsas||[]).find(b=>b.esCashflow); return ss+(cf?cf.monto:0);
+  },0),0);
+
+  // chart data
+  const maxFact = Math.max(...meses.map(m=>(mesData[m.id]?.ingresos||[]).reduce((s,i)=>s+(i.total||0),0)),1);
+  const barsHTML = meses.map(m=>{
+    const fact = (mesData[m.id]?.ingresos||[]).reduce((s,i)=>s+(i.total||0),0);
+    const pct = Math.round((fact/maxFact)*100);
+    const label = m.nombre.split(' ')[0].substring(0,3);
+    return `<div class="bar-col">
+      <div class="bar-wrap"><div class="bar bar-facturado" style="height:${pct}%" title="${fmt(fact)}"></div></div>
+      <div class="bar-label">${label}</div>
+    </div>`;
+  }).join('');
+
+  // table
+  const rowsHTML = meses.length === 0
+    ? '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3)">Sin meses registrados</td></tr>'
+    : meses.map(m=>{
+      const data = mesData[m.id] || {ingresos:[],gastos:[]};
+      const fact = data.ingresos.reduce((s,i)=>s+(i.total||0),0);
+      const cobrado = data.ingresos.filter(i=>i.pagado).reduce((s,i)=>s+(i.total||0),0);
+      const pend = fact - cobrado;
+      const cf = data.ingresos.filter(i=>i.pagado).reduce((s,i)=>{
+        const b=(i.bolsas||[]).find(b=>b.esCashflow); return s+(b?b.monto:0);
+      },0);
+      const gastos = data.gastos.reduce((s,g)=>s+(g.monto||0),0);
+      return `<tr>
+        <td><span class="mes-link" onclick="goToMes('${m.id}')">${m.nombre}</span></td>
+        <td class="amount">${fmt(fact)}</td>
+        <td class="amount" style="color:var(--green)">${fmt(cobrado)}${pend>0?`<br><span style="font-size:11px;color:var(--amber)">Pend: ${fmt(pend)}</span>`:''}</td>
+        <td class="amount" style="color:var(--amber)">${fmt(cf)}</td>
+        <td class="amount" style="color:var(--red)">${fmt(gastos)}</td>
+      </tr>`;
+    }).join('');
+
+  container.innerHTML = `
+    <div class="anual-header">
+      <div class="anual-title">Resumen anual</div>
+      <div class="anual-year">${year}</div>
+    </div>
+    <div class="anual-stats">
+      <div class="stat-card"><div class="stat-label">Total facturado</div><div class="stat-value">${fmt(totalFacturado)}</div><div class="stat-sub">Todos los meses</div></div>
+      <div class="stat-card"><div class="stat-label">Total cobrado</div><div class="stat-value" style="color:var(--green)">${fmt(totalCobrado)}</div><div class="stat-sub">${totalFacturado>0?Math.round(totalCobrado/totalFacturado*100):0}% del facturado</div></div>
+      <div class="stat-card"><div class="stat-label">Cashflow total</div><div class="stat-value" style="color:var(--amber)">${fmt(totalCf)}</div><div class="stat-sub">De ingresos cobrados</div></div>
+    </div>
+    ${meses.length>0?`<div class="chart-wrap"><div class="chart-title">Facturado por mes</div><div class="chart-bars">${barsHTML}</div></div>`:''}
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+      <table class="anual-table">
+        <thead><tr>
+          <th>Mes</th><th>Facturado</th><th>Cobrado</th><th>Cashflow</th><th>Gastos</th>
+        </tr></thead>
+        <tbody>${rowsHTML}</tbody>
+      </table>
+    </div>`;
+}
+
+window.goToMes = (id) => {
+  document.querySelectorAll('.nav-tab')[0].click();
+  selectMes(id);
+};
+
+// ── MODAL ──
+function showModal(html) {
+  document.getElementById('modal-box').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+window.closeModal = () => document.getElementById('modal-overlay').classList.remove('open');
+document.getElementById('modal-overlay').addEventListener('click', e => { if(e.target===document.getElementById('modal-overlay')) window.closeModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') window.closeModal(); });
+
+// ── FORMAT ──
+function fmt(n) { return '$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(d) {
+  if (!d) return '—';
+  const [y,m,day] = d.split('-');
+  const ms=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${parseInt(day)} ${ms[parseInt(m)-1]} ${y}`;
+}
+</script>
+</body>
+</html>
