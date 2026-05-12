@@ -8,14 +8,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0c0c0e; --surface: #131316; --surface2: #1c1c21; --surface3: #242429;
-  --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.11);
-  --text: #eeecea; --text2: #888580; --text3: #4a4845;
-  --green: #3ecf8e; --green-dim: rgba(62,207,142,0.1); --green-border: rgba(62,207,142,0.25);
-  --red: #f06c6c; --red-dim: rgba(240,108,108,0.1); --red-border: rgba(240,108,108,0.25);
-  --amber: #f5a623; --amber-dim: rgba(245,166,35,0.1); --amber-border: rgba(245,166,35,0.25);
-  --blue: #5b9cf6; --blue-dim: rgba(91,156,246,0.1); --blue-border: rgba(91,156,246,0.25);
-  --gold: #c9a96e; --gold-dim: rgba(201,169,110,0.08); --r: 10px; --rs: 7px;
+  --bg:#0c0c0e;--surface:#131316;--surface2:#1c1c21;--surface3:#242429;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
+  --text:#eeecea;--text2:#888580;--text3:#4a4845;
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,0.1);--green-border:rgba(62,207,142,0.25);
+  --red:#f06c6c;--red-dim:rgba(240,108,108,0.1);--red-border:rgba(240,108,108,0.25);
+  --amber:#f5a623;--amber-dim:rgba(245,166,35,0.1);--amber-border:rgba(245,166,35,0.25);
+  --blue:#5b9cf6;--blue-dim:rgba(91,156,246,0.1);--blue-border:rgba(91,156,246,0.25);
+  --purple:#a78bfa;--purple-dim:rgba(167,139,250,0.1);--purple-border:rgba(167,139,250,0.25);
+  --gold:#c9a96e;--gold-dim:rgba(201,169,110,0.08);--r:10px;--rs:7px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
@@ -38,7 +39,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .auth-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text3);font-size:12px}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border2)}
 .google-btn{width:100%;padding:11px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:10px}
-.google-btn:hover{border-color:var(--border2);background:var(--surface3)}
+.google-btn:hover{background:var(--surface3)}
 .google-icon{width:18px;height:18px;flex-shrink:0}
 .auth-error{font-size:12px;color:var(--red);margin-top:10px;min-height:18px}
 
@@ -56,7 +57,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .user-name{font-size:12px;color:var(--text3);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .logout-btn{background:none;border:1px solid var(--border2);color:var(--text3);padding:5px 12px;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .logout-btn:hover{border-color:var(--red-border);color:var(--red)}
-
 .content{flex:1;overflow:hidden;display:flex}
 .page{display:none;width:100%;overflow-y:auto}
 .page.active{display:flex;flex-direction:column}
@@ -77,12 +77,23 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .mes-content{overflow-y:auto;padding:28px}
 .mes-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
 .mes-title{font-family:'Instrument Serif',serif;font-size:28px;color:var(--text);letter-spacing:-.3px}
-.mes-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
-@media(max-width:700px){.mes-stats{grid-template-columns:repeat(2,1fr)}.mes-layout{grid-template-columns:1fr}}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+
+/* STATS GRID - 5 cards */
+.mes-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:28px}
+@media(max-width:900px){.mes-stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.mes-stats{grid-template-columns:repeat(2,1fr)}.mes-layout{grid-template-columns:1fr}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
 .stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:6px}
-.stat-value{font-size:22px;font-weight:600;letter-spacing:-.5px}
+.stat-value{font-size:20px;font-weight:600;letter-spacing:-.5px}
 .stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.stat-card.alert-card{border-color:var(--red-border);background:var(--red-dim)}
+.stat-card.alert-card .stat-label{color:var(--red)}
+
+/* ALERT BANNER */
+.alert-banner{background:var(--red-dim);border:1px solid var(--red-border);border-radius:var(--r);padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--red);line-height:1.6}
+.alert-banner strong{color:#fca5a5;display:block;margin-bottom:4px;font-size:14px}
+.alert-banner ul{padding-left:18px;margin-top:6px}
+.alert-banner li{margin-bottom:3px}
 
 .section{margin-bottom:32px}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -113,29 +124,39 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .bolsa-chip.cashflow{border-color:var(--green-border);background:var(--green-dim)}
 .bolsa-chip.cashflow .bolsa-nombre{color:var(--green)}
 .bolsa-chip.cashflow .bolsa-monto{color:var(--green)}
+.bolsa-chip.personal{border-color:var(--purple-border);background:var(--purple-dim)}
+.bolsa-chip.personal .bolsa-nombre{color:var(--purple)}
+.bolsa-chip.personal .bolsa-monto{color:var(--purple)}
 .bolsas-actions{display:flex;gap:8px;margin-top:10px}
 .action-sm{background:none;border:1px solid var(--border2);color:var(--text3);padding:5px 12px;border-radius:var(--rs);font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 .action-sm:hover{color:var(--text)}
 .action-sm.danger:hover{border-color:var(--red-border);color:var(--red)}
 
 /* GASTOS */
-.gasto-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;background:var(--surface)}
+.gasto-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;background:var(--surface);transition:border-color .2s}
+.gasto-row.pagado-gasto{border-color:var(--green-border);opacity:.7}
 .gasto-prio{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.prio-alta{background:var(--red)}.prio-media{background:var(--amber)}.prio-baja{background:var(--text3)}
+.prio-alta{background:var(--red)}.prio-media{background:var(--amber)}.prio-baja{background:var(--text3)}.prio-personal{background:var(--purple)}
 .gasto-info{flex:1;min-width:0}
 .gasto-desc{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gasto-fecha{font-size:11px;color:var(--text3);margin-top:1px}
 .gasto-amount{font-size:14px;font-weight:600;color:var(--red);white-space:nowrap}
+.gasto-row.pagado-gasto .gasto-amount{color:var(--green)}
+.gasto-check-btn{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:11px;font-weight:700;color:transparent;flex-shrink:0}
+.gasto-check-btn:hover{border-color:var(--green);color:var(--green)}
+.gasto-check-btn.paid{background:var(--green);border-color:var(--green);color:#0c0c0e}
 .del-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 6px;font-size:14px;line-height:1;transition:color .15s;border-radius:4px}
 .del-btn:hover{color:var(--red)}
 
 /* CASHFLOW PLAN */
 .cf-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
-.cf-header{padding:12px 16px;background:var(--green-dim);border-bottom:1px solid var(--green-border);display:flex;justify-content:space-between;align-items:center}
+.cf-header{padding:12px 16px;background:var(--green-dim);border-bottom:1px solid var(--green-border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .cf-name{font-size:13px;font-weight:500;color:var(--green)}
+.cf-header-meta{font-size:11px;color:rgba(62,207,142,.6);margin-top:2px}
 .cf-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid;white-space:nowrap}
 .badge-ok{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
 .badge-warn{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}
+.badge-pending{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-border)}
 .cf-alloc{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px}
 .cf-alloc:last-child{border-bottom:none}
 .cf-alloc-name{color:var(--text2)}
@@ -187,11 +208,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .modal-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s}
 .modal-input:focus{border-color:var(--gold)}
 .modal-select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none}
-.bolsa-editor-row{display:grid;grid-template-columns:1fr 110px auto auto;gap:8px;align-items:center;margin-bottom:8px}
+.bolsa-editor-row{display:grid;grid-template-columns:1fr 100px auto auto;gap:8px;align-items:center;margin-bottom:8px}
 .bolsa-editor-row input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%}
 .bolsa-editor-row input:focus{border-color:var(--gold)}
-.cf-check{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);white-space:nowrap;cursor:pointer}
-.cf-check input{accent-color:var(--green);width:14px;height:14px;cursor:pointer}
+.bolsa-type-select{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 8px;outline:none;width:100%}
 .rem-bolsa{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 6px;font-size:16px;line-height:1;transition:color .15s;border-radius:4px}
 .rem-bolsa:hover{color:var(--red)}
 .add-bolsa-btn{background:none;border:1px dashed var(--border2);border-radius:var(--rs);color:var(--text3);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;padding:8px;width:100%;margin-top:4px;transition:all .15s}
@@ -200,7 +220,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 /* UTILS */
 .divider{border:none;border-top:1px solid var(--border);margin:24px 0}
 .empty{text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--r)}
-.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;margin:40px auto;display:block}
+.spinner{display:block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;margin:40px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -211,19 +231,15 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   <div class="auth-box">
     <div class="auth-logo">Cashflow</div>
     <div class="auth-sub">Gestión inteligente de flujo de caja</div>
-
     <button class="google-btn" onclick="loginGoogle()">
       <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continuar con Google
     </button>
-
     <div class="auth-divider">o usa tu correo</div>
-
     <div class="auth-tabs">
       <div class="auth-tab active" onclick="showAuthTab('login')">Iniciar sesión</div>
       <div class="auth-tab" onclick="showAuthTab('registro')">Crear cuenta</div>
     </div>
-
     <div class="auth-form active" id="form-login">
       <div class="f-row"><label>Correo</label><input type="email" id="l-email" placeholder="tu@correo.com"></div>
       <div class="f-row"><label>Contraseña</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
@@ -269,14 +285,11 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
     </div>
     <div class="page" id="page-anual">
-      <div class="anual-content" id="anual-content">
-        <div class="spinner"></div>
-      </div>
+      <div class="anual-content" id="anual-content"><div class="spinner"></div></div>
     </div>
   </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal-box"></div>
 </div>
@@ -289,57 +302,47 @@ import { getFirestore, doc, collection, getDocs, setDoc, deleteDoc, updateDoc }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const fbApp = initializeApp({
-  apiKey: "AIzaSyD8JS-8fwIGWzX29bOVHc-yse3qt70X2cM",
-  authDomain: "cashflow-a7fcc.firebaseapp.com",
-  projectId: "cashflow-a7fcc",
-  storageBucket: "cashflow-a7fcc.firebasestorage.app",
-  messagingSenderId: "280921673419",
-  appId: "1:280921673419:web:06b196662bafa52620d54e"
+  apiKey:"AIzaSyD8JS-8fwIGWzX29bOVHc-yse3qt70X2cM",
+  authDomain:"cashflow-a7fcc.firebaseapp.com",
+  projectId:"cashflow-a7fcc",
+  storageBucket:"cashflow-a7fcc.firebasestorage.app",
+  messagingSenderId:"280921673419",
+  appId:"1:280921673419:web:06b196662bafa52620d54e"
 });
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
-const googleProvider = new GoogleAuthProvider();
+const gProvider = new GoogleAuthProvider();
 
-// STATE
-let uid = null, meses = [], activeMesId = null, mesData = {};
+let uid=null, meses=[], activeMesId=null, mesData={};
 
-// AUTH
-window.showAuthTab = (tab) => {
-  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='registro')));
-  document.getElementById('form-login').classList.toggle('active', tab==='login');
-  document.getElementById('form-registro').classList.toggle('active', tab==='registro');
+// ── AUTH ──
+window.showAuthTab = t => {
+  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='registro')));
+  document.getElementById('form-login').classList.toggle('active',t==='login');
+  document.getElementById('form-registro').classList.toggle('active',t==='registro');
 };
-window.loginGoogle = async () => {
-  try { await signInWithPopup(auth, googleProvider); }
-  catch(e) { document.getElementById('login-err').textContent = tradErr(e.code); }
-};
-window.login = async () => {
-  const e=document.getElementById('l-email').value.trim(), p=document.getElementById('l-pass').value;
+window.loginGoogle = async()=>{ try{await signInWithPopup(auth,gProvider);}catch(e){document.getElementById('login-err').textContent=tradErr(e.code);} };
+window.login = async()=>{
+  const e=document.getElementById('l-email').value.trim(),p=document.getElementById('l-pass').value;
   document.getElementById('login-err').textContent='';
-  try { await signInWithEmailAndPassword(auth,e,p); }
-  catch(e){ document.getElementById('login-err').textContent=tradErr(e.code); }
+  try{await signInWithEmailAndPassword(auth,e,p);}catch(e){document.getElementById('login-err').textContent=tradErr(e.code);}
 };
-window.registro = async () => {
-  const e=document.getElementById('r-email').value.trim(), p=document.getElementById('r-pass').value;
+window.registro = async()=>{
+  const e=document.getElementById('r-email').value.trim(),p=document.getElementById('r-pass').value;
   document.getElementById('reg-err').textContent='';
-  try { await createUserWithEmailAndPassword(auth,e,p); }
-  catch(e){ document.getElementById('reg-err').textContent=tradErr(e.code); }
+  try{await createUserWithEmailAndPassword(auth,e,p);}catch(e){document.getElementById('reg-err').textContent=tradErr(e.code);}
 };
-window.logout = () => signOut(auth);
-function tradErr(c){
-  return({'auth/invalid-email':'Correo inválido','auth/user-not-found':'No existe esa cuenta','auth/wrong-password':'Contraseña incorrecta','auth/invalid-credential':'Correo o contraseña incorrectos','auth/email-already-in-use':'Ese correo ya está registrado','auth/weak-password':'Mínimo 6 caracteres','auth/popup-closed-by-user':'Cerraste la ventana de Google'}[c]||'Error: '+c);
-}
+window.logout=()=>signOut(auth);
+function tradErr(c){return({'auth/invalid-email':'Correo inválido','auth/user-not-found':'No existe esa cuenta','auth/wrong-password':'Contraseña incorrecta','auth/invalid-credential':'Correo o contraseña incorrectos','auth/email-already-in-use':'Ese correo ya está registrado','auth/weak-password':'Mínimo 6 caracteres','auth/popup-closed-by-user':'Cerraste la ventana de Google'}[c]||'Error: '+c);}
 
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    uid = user.uid;
+onAuthStateChanged(auth, async user=>{
+  if(user){
+    uid=user.uid;
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app').style.display='flex';
-    // avatar / nombre
-    const avatar = document.getElementById('user-avatar');
-    const nameEl = document.getElementById('user-name');
-    if (user.photoURL) { avatar.src=user.photoURL; avatar.style.display='block'; }
-    nameEl.textContent = user.displayName || user.email;
+    const av=document.getElementById('user-avatar');
+    if(user.photoURL){av.src=user.photoURL;av.style.display='block';}
+    document.getElementById('user-name').textContent=user.displayName||user.email;
     await loadMeses();
   } else {
     uid=null;
@@ -348,57 +351,52 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// NAV
-window.showPage = (page, btn) => {
+// ── NAV ──
+window.showPage=(page,btn)=>{
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   btn.classList.add('active');
-  if (page==='anual') renderAnual();
+  if(page==='anual') renderAnual();
 };
 
-// MESES
-async function loadMeses() {
-  const snap = await getDocs(collection(db,'users',uid,'meses'));
-  meses = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.orden-b.orden);
+// ── MESES ──
+async function loadMeses(){
+  const snap=await getDocs(collection(db,'users',uid,'meses'));
+  meses=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.orden-b.orden);
   renderSidebar();
-  if (meses.length>0) selectMes(meses[meses.length-1].id);
+  if(meses.length) selectMes(meses[meses.length-1].id);
 }
 
-function renderSidebar() {
-  const list = document.getElementById('mes-list');
-  if (!meses.length) { list.innerHTML='<div style="padding:12px 16px;font-size:12px;color:var(--text3)">Sin meses aún</div>'; return; }
-  list.innerHTML = meses.map(m=>{
-    const d=mesData[m.id], hasData=d&&(d.ingresos.length||d.gastos.length);
-    return `<div class="mes-item ${m.id===activeMesId?'active':''} ${hasData?'has-data':''}" onclick="selectMes('${m.id}')">
-      <span>${m.nombre}</span><span class="mes-item-dot"></span></div>`;
+function renderSidebar(){
+  const list=document.getElementById('mes-list');
+  if(!meses.length){list.innerHTML='<div style="padding:12px 16px;font-size:12px;color:var(--text3)">Sin meses aún</div>';return;}
+  list.innerHTML=meses.map(m=>{
+    const d=mesData[m.id],hasData=d&&(d.ingresos.length||d.gastos.length);
+    return `<div class="mes-item ${m.id===activeMesId?'active':''} ${hasData?'has-data':''}" onclick="selectMes('${m.id}')"><span>${m.nombre}</span><span class="mes-item-dot"></span></div>`;
   }).join('');
 }
 
-window.selectMes = async (id) => {
+window.selectMes=async id=>{
   activeMesId=id; renderSidebar();
-  if (!mesData[id]) await loadMesData(id);
+  if(!mesData[id]) await loadMesData(id);
   renderMes();
 };
 
-async function loadMesData(id) {
-  const [iS,gS] = await Promise.all([
+async function loadMesData(id){
+  const [iS,gS]=await Promise.all([
     getDocs(collection(db,'users',uid,'meses',id,'ingresos')),
     getDocs(collection(db,'users',uid,'meses',id,'gastos'))
   ]);
   mesData[id]={
-    ingresos: iS.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')),
-    gastos: gS.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))
+    ingresos:iS.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')),
+    gastos:gS.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))
   };
 }
 
-window.openNuevoMes = () => {
-  const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const now=new Date();
-  const opts=Array.from({length:12},(_,i)=>{
-    const m=(now.getMonth()+i)%12, y=now.getFullYear()+Math.floor((now.getMonth()+i)/12);
-    return `<option>${MONTHS[m]} ${y}</option>`;
-  }).join('');
+window.openNuevoMes=()=>{
+  const M=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],now=new Date();
+  const opts=Array.from({length:12},(_,i)=>{const m=(now.getMonth()+i)%12,y=now.getFullYear()+Math.floor((now.getMonth()+i)/12);return`<option>${M[m]} ${y}</option>`;}).join('');
   showModal(`<div class="modal-title">Nuevo mes</div>
     <div class="f-row"><label>Mes</label><select id="nm-sel" class="modal-select">${opts}</select></div>
     <div class="f-row"><label>O nombre personalizado</label><input id="nm-custom" class="modal-input" placeholder="Ej: Q2 2025, Freelance..."></div>
@@ -407,35 +405,69 @@ window.openNuevoMes = () => {
       <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
     </div>`);
 };
-
-window.crearMes = async () => {
+window.crearMes=async()=>{
   const nombre=(document.getElementById('nm-custom').value.trim())||document.getElementById('nm-sel').value;
   const id=Date.now().toString();
   await setDoc(doc(db,'users',uid,'meses',id),{nombre,orden:Date.now()});
-  meses.push({id,nombre,orden:Date.now()});
-  mesData[id]={ingresos:[],gastos:[]};
+  meses.push({id,nombre,orden:Date.now()}); mesData[id]={ingresos:[],gastos:[]};
   closeModal(); renderSidebar(); selectMes(id);
 };
 
-// RENDER MES
-function renderMes() {
+// ── HELPERS ──
+function cfDeIngreso(ing){ const b=(ing.bolsas||[]).find(b=>b.tipo==='cashflow'||b.esCashflow); return b?b.monto:0; }
+function personalDeIngreso(ing){ return (ing.bolsas||[]).filter(b=>b.tipo==='personal').reduce((s,b)=>s+b.monto,0); }
+
+// ── RENDER MES ──
+function renderMes(){
   const mes=meses.find(m=>m.id===activeMesId), data=mesData[activeMesId];
-  if (!mes||!data) return;
-  const totalFact=data.ingresos.reduce((s,i)=>s+(i.total||0),0);
-  const totalCob=data.ingresos.filter(i=>i.pagado).reduce((s,i)=>s+(i.total||0),0);
-  const totalCF=data.ingresos.filter(i=>i.pagado).reduce((s,i)=>{const cf=(i.bolsas||[]).find(b=>b.esCashflow);return s+(cf?cf.monto:0);},0);
-  const totalGas=data.gastos.reduce((s,g)=>s+(g.monto||0),0);
+  if(!mes||!data) return;
+
+  const totalFact = data.ingresos.reduce((s,i)=>s+(i.total||0),0);
+  const totalCob  = data.ingresos.filter(i=>i.pagado).reduce((s,i)=>s+(i.total||0),0);
+
+  // CF cobrado (real)
+  const cfCobrado = data.ingresos.filter(i=>i.pagado).reduce((s,i)=>s+cfDeIngreso(i),0);
+  // CF proyectado (todos, incluyendo no cobrados)
+  const cfTotal   = data.ingresos.reduce((s,i)=>s+cfDeIngreso(i),0);
+  // Gasto personal (de bolsas tipo personal)
+  const totalPersonal = data.ingresos.reduce((s,i)=>s+personalDeIngreso(i),0);
+
+  const totalGas  = data.gastos.reduce((s,g)=>s+(g.monto||0),0);
+  const gastosPagados = data.gastos.filter(g=>g.pagado).reduce((s,g)=>s+(g.monto||0),0);
+
+  // Profit = lo que sobra del CF cobrado después de gastos
+  const profit = cfCobrado - totalGas;
+
+  // Alerta: revisar si CF proyectado (no cobrado aún) alcanza para gastos futuros
+  const gastosPendientes = data.gastos.filter(g=>!g.pagado);
+  const cfPendiente = data.ingresos.filter(i=>!i.pagado).reduce((s,i)=>s+cfDeIngreso(i),0);
+  const gastosNoCubiertos = [];
+  let cfDisponible = cfCobrado - gastosPagados;
+  for(const g of gastosPendientes.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))){
+    if(cfDisponible >= g.monto){ cfDisponible -= g.monto; }
+    else if(cfDisponible + cfPendiente >= g.monto){ gastosNoCubiertos.push({...g, tipo:'con-pendiente'}); }
+    else{ gastosNoCubiertos.push({...g, tipo:'sin-cobertura'}); }
+  }
+  const hayAlerta = gastosNoCubiertos.length > 0;
+
+  let alertHTML = '';
+  if(hayAlerta){
+    const items = gastosNoCubiertos.map(g=>`<li><strong>${g.descripcion}</strong> (${fmt(g.monto)}, fecha: ${fmtDate(g.fecha)}) — ${g.tipo==='sin-cobertura'?'❌ Sin cobertura incluso con ingresos pendientes':'⚠️ Solo se puede cubrir si cobras los ingresos pendientes'}</li>`).join('');
+    alertHTML=`<div class="alert-banner"><strong>⚠️ Alerta de cashflow</strong>Algunos gastos podrían no cubrirse a tiempo con el cashflow actual:<ul>${items}</ul></div>`;
+  }
 
   document.getElementById('mes-content').innerHTML=`
     <div class="mes-header">
       <div class="mes-title">${mes.nombre}</div>
       <button class="action-sm danger" onclick="eliminarMes()">Eliminar mes</button>
     </div>
+    ${alertHTML}
     <div class="mes-stats">
       <div class="stat-card"><div class="stat-label">Facturado</div><div class="stat-value">${fmt(totalFact)}</div><div class="stat-sub">${data.ingresos.length} ingreso(s)</div></div>
       <div class="stat-card"><div class="stat-label">Cobrado</div><div class="stat-value" style="color:var(--green)">${fmt(totalCob)}</div><div class="stat-sub">${data.ingresos.filter(i=>i.pagado).length} pagado(s)</div></div>
-      <div class="stat-card"><div class="stat-label">Cashflow</div><div class="stat-value" style="color:var(--amber)">${fmt(totalCF)}</div><div class="stat-sub">De cobrados</div></div>
-      <div class="stat-card"><div class="stat-label">Gastos</div><div class="stat-value" style="color:var(--red)">${fmt(totalGas)}</div><div class="stat-sub">${data.gastos.length} gasto(s)</div></div>
+      <div class="stat-card"><div class="stat-label">CF proyectado</div><div class="stat-value" style="color:var(--blue)">${fmt(cfTotal)}</div><div class="stat-sub">CF cobrado: ${fmt(cfCobrado)}</div></div>
+      <div class="stat-card"><div class="stat-label">Gasto personal</div><div class="stat-value" style="color:var(--purple)">${fmt(totalPersonal)}</div><div class="stat-sub">De bolsas personales</div></div>
+      <div class="stat-card ${profit<0?'alert-card':''}"><div class="stat-label">El Profit ✦</div><div class="stat-value" style="color:${profit>=0?'var(--amber)':'var(--red)'}">${fmt(Math.abs(profit))}</div><div class="stat-sub">${profit>=0?'Sobrante del CF':'Faltante en CF'} · Gastos pagados: ${fmt(gastosPagados)}</div></div>
     </div>
     <div class="section">
       <div class="section-header"><div class="section-title">Ingresos</div><button class="add-btn" onclick="openNuevoIngreso()">+ Agregar</button></div>
@@ -445,6 +477,7 @@ function renderMes() {
     <div class="section">
       <div class="section-header"><div class="section-title">Gastos del mes</div><button class="add-btn" onclick="openNuevoGasto()">+ Agregar</button></div>
       ${data.gastos.length?data.gastos.map(renderGastoRow).join(''):'<div class="empty">Sin gastos registrados.</div>'}
+      ${data.gastos.length?`<div style="font-size:12px;color:var(--text3);margin-top:10px">Pagados: ${fmt(gastosPagados)} · Pendientes: ${fmt(totalGas-gastosPagados)}</div>`:''}
     </div>
     <div class="divider"></div>
     <div class="section">
@@ -453,18 +486,18 @@ function renderMes() {
     </div>`;
 }
 
-function renderIngresoCard(ing) {
-  const cf=(ing.bolsas||[]).find(b=>b.esCashflow), cfAmt=cf?cf.monto:0;
+function renderIngresoCard(ing){
+  const cfAmt=cfDeIngreso(ing), persAmt=personalDeIngreso(ing);
   return `<div class="ingreso-card ${ing.pagado?'pagado':''}" id="ic-${ing.id}">
     <div class="ingreso-header" onclick="toggleIngreso('${ing.id}')">
       <button class="pagado-toggle ${ing.pagado?'on':''}" onclick="event.stopPropagation();togglePagado('${ing.id}')" title="${ing.pagado?'Marcar pendiente':'Marcar cobrado'}">✓</button>
       <div class="ingreso-info">
         <div class="ingreso-cliente">${ing.cliente}</div>
-        <div class="ingreso-fecha">${fmtDate(ing.fecha)} · ${ing.pagado?'<span style="color:var(--green);font-weight:500">Cobrado</span>':'Pendiente'}</div>
+        <div class="ingreso-fecha">${fmtDate(ing.fecha)} · ${ing.pagado?'<span style="color:var(--green);font-weight:500">Cobrado</span>':'<span style="color:var(--amber)">Pendiente</span>'}</div>
       </div>
       <div style="text-align:right">
         <div class="ingreso-total">${fmt(ing.total||0)}</div>
-        ${cfAmt>0?`<div class="ingreso-cashflow">CF: ${fmt(cfAmt)}</div>`:''}
+        ${cfAmt>0?`<div class="ingreso-cashflow">CF: ${fmt(cfAmt)}${persAmt>0?` · Personal: ${fmt(persAmt)}`:''}</div>`:''}
       </div>
       <span class="ingreso-chevron">▼</span>
     </div>
@@ -478,47 +511,57 @@ function renderIngresoCard(ing) {
   </div>`;
 }
 
-function renderBolsas(ing) {
+function renderBolsas(ing){
   const bolsas=ing.bolsas||[];
-  if (!bolsas.length) return '<div style="font-size:12px;color:var(--text3);padding:8px 0">Sin bolsas definidas.</div>';
-  return `<div class="bolsas-grid">${bolsas.map(b=>`<div class="bolsa-chip ${b.esCashflow?'cashflow':''}"><div class="bolsa-nombre">${b.nombre}${b.esCashflow?' ✦':''}</div><div class="bolsa-monto">${fmt(b.monto)}</div></div>`).join('')}</div>`;
+  if(!bolsas.length) return '<div style="font-size:12px;color:var(--text3);padding:8px 0">Sin bolsas definidas.</div>';
+  const typeClass=b=>b.tipo==='cashflow'||b.esCashflow?'cashflow':b.tipo==='personal'?'personal':'';
+  const typeLabel=b=>b.tipo==='cashflow'||b.esCashflow?' ✦ CF':b.tipo==='personal'?' ♦ Personal':'';
+  return `<div class="bolsas-grid">${bolsas.map(b=>`<div class="bolsa-chip ${typeClass(b)}"><div class="bolsa-nombre">${b.nombre}${typeLabel(b)}</div><div class="bolsa-monto">${fmt(b.monto)}</div></div>`).join('')}</div>`;
 }
 
-function renderGastoRow(g) {
-  return `<div class="gasto-row">
-    <div class="gasto-prio prio-${g.prioridad||'media'}"></div>
-    <div class="gasto-info"><div class="gasto-desc">${g.descripcion}</div><div class="gasto-fecha">${fmtDate(g.fecha)} · ${g.prioridad||'media'}</div></div>
-    <div class="gasto-amount">−${fmt(g.monto)}</div>
+function renderGastoRow(g){
+  const isPers=g.prioridad==='personal';
+  return `<div class="gasto-row ${g.pagado?'pagado-gasto':''}">
+    <div class="gasto-prio prio-${isPers?'personal':g.prioridad||'media'}"></div>
+    <div class="gasto-info">
+      <div class="gasto-desc">${g.descripcion}${isPers?' <span style="font-size:10px;color:var(--purple);background:var(--purple-dim);border:1px solid var(--purple-border);padding:1px 6px;border-radius:10px">personal</span>':''}</div>
+      <div class="gasto-fecha">${fmtDate(g.fecha)}${!isPers?' · '+g.prioridad:''}</div>
+    </div>
+    <div class="gasto-amount">${g.pagado?'✓ ':''} ${fmt(g.monto)}</div>
+    <button class="gasto-check-btn ${g.pagado?'paid':''}" onclick="toggleGastoPagado('${g.id}')" title="${g.pagado?'Marcar pendiente':'Marcar como pagado'}">✓</button>
     <button class="del-btn" onclick="eliminarGasto('${g.id}')">✕</button>
   </div>`;
 }
 
-function renderCashflowPlan(data) {
-  const cfIngresos=data.ingresos.filter(i=>{const cf=(i.bolsas||[]).find(b=>b.esCashflow);return cf&&cf.monto>0&&i.pagado;});
-  if (!cfIngresos.length) return '<div class="no-cf">Marca ingresos como cobrados y define su bolsa de cashflow para ver el plan.</div>';
+// ── CASHFLOW PLAN ──
+function renderCashflowPlan(data){
+  // Incluye TODOS los ingresos con CF (cobrados y no cobrados)
+  const cfIngresos=data.ingresos.filter(i=>cfDeIngreso(i)>0);
+  if(!cfIngresos.length) return '<div class="no-cf">Define bolsas de cashflow en tus ingresos para ver el plan.</div>';
 
-  const gastos=[...data.gastos].sort((a,b)=>{
+  const gastos=[...data.gastos].filter(g=>g.prioridad!=='personal').sort((a,b)=>{
     const p={alta:0,media:1,baja:2};
     if(a.fecha!==b.fecha) return (a.fecha||'').localeCompare(b.fecha||'');
     return (p[a.prioridad]||1)-(p[b.prioridad]||1);
   });
 
-  let incW=cfIngresos.map(i=>{const cf=i.bolsas.find(b=>b.esCashflow);return{...i,cfAmount:cf.monto,remaining:cf.monto,allocations:[]};});
+  let incW=cfIngresos.map(i=>({...i,cfAmount:cfDeIngreso(i),remaining:cfDeIngreso(i),allocations:[]}));
   let expW=gastos.map(e=>({...e,covered:false,uncovered:0}));
 
-  for (let exp of expW) {
+  for(let exp of expW){
+    // Primero candidatos con fecha anterior o igual (cobrados o no)
     let cands=incW.filter(i=>i.remaining>0&&(i.fecha||'')<=(exp.fecha||''));
-    if (!cands.length) cands=incW.filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    if(!cands.length) cands=incW.filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
     else cands.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-    // prefer single source that can cover fully
+    // Preferir uno solo que cubra completo
     const single=cands.find(i=>i.remaining>=exp.monto);
-    if (single) {
+    if(single){
       single.remaining-=exp.monto;
-      single.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:exp.monto,prioridad:exp.prioridad});
+      single.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:exp.monto,prioridad:exp.prioridad,gastoPagado:exp.pagado});
       exp.covered=true;
     } else {
       let rem=exp.monto;
-      for (let inc of cands){if(rem<=0)break;const take=Math.min(inc.remaining,rem);inc.remaining-=take;rem-=take;inc.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:take,prioridad:exp.prioridad});}
+      for(let inc of cands){if(rem<=0)break;const take=Math.min(inc.remaining,rem);inc.remaining-=take;rem-=take;inc.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:take,prioridad:exp.prioridad,gastoPagado:exp.pagado});}
       if(rem<=0)exp.covered=true;else exp.uncovered=rem;
     }
   }
@@ -528,83 +571,117 @@ function renderCashflowPlan(data) {
 
   let html=incW.map(inc=>{
     const reserved=inc.cfAmount-inc.remaining;
-    const badge=inc.remaining>0?`<span class="cf-badge badge-ok">Sobra ${fmt(inc.remaining)}</span>`:`<span class="cf-badge badge-warn">Sin sobrante</span>`;
-    let h=`<div class="cf-card"><div class="cf-header"><div><div class="cf-name">💰 ${inc.cliente}</div><div style="font-size:11px;color:rgba(62,207,142,.6);margin-top:2px">CF: ${fmt(inc.cfAmount)} · cobrado ${fmtDate(inc.fecha)}</div></div>${badge}</div>`;
-    if (!inc.allocations.length) h+=`<div class="cf-alloc"><span style="color:var(--text3)">Sin gastos asignados.</span></div>`;
-    else inc.allocations.forEach(a=>{const pc=a.prioridad==='alta'?'var(--red)':a.prioridad==='media'?'var(--amber)':'var(--text3)';h+=`<div class="cf-alloc"><div><div class="cf-alloc-name">${a.desc}</div><div class="cf-alloc-date">Fecha: ${fmtDate(a.fecha)} · <span style="color:${pc}">${a.prioridad||'media'}</span></div></div><div class="cf-alloc-amt">−${fmt(a.amount)}</div></div>`;});
-    if(reserved>0)h+=`<div class="cf-reserved"><span>Reservado para gastos</span><span>${fmt(reserved)}</span></div>`;
-    if(inc.remaining>0)h+=`<div class="cf-leftover"><span>✦ Sobrante libre</span><span>${fmt(inc.remaining)}</span></div>`;
-    h+=`</div>`;return h;
+    const isPending=!inc.pagado;
+    const badge=isPending
+      ? `<span class="cf-badge badge-pending">Pendiente de cobro</span>`
+      : inc.remaining>0?`<span class="cf-badge badge-ok">Sobra ${fmt(inc.remaining)}</span>`:`<span class="cf-badge badge-warn">Sin sobrante</span>`;
+    let h=`<div class="cf-card" style="${isPending?'opacity:.85':''}">
+      <div class="cf-header">
+        <div>
+          <div class="cf-name">💰 ${inc.cliente}${isPending?' <span style="font-size:11px;color:var(--blue)">· No cobrado aún</span>':''}</div>
+          <div class="cf-header-meta">CF: ${fmt(inc.cfAmount)} · ${isPending?'Esperado':'Cobrado'} el ${fmtDate(inc.fecha)}</div>
+        </div>
+        ${badge}
+      </div>`;
+    if(!inc.allocations.length) h+=`<div class="cf-alloc"><span style="color:var(--text3)">Sin gastos asignados.</span></div>`;
+    else inc.allocations.forEach(a=>{
+      const pc=a.prioridad==='alta'?'var(--red)':a.prioridad==='media'?'var(--amber)':'var(--text3)';
+      h+=`<div class="cf-alloc ${a.gastoPagado?'':''}">
+        <div>
+          <div class="cf-alloc-name">${a.gastoPagado?'✓ ':''}${a.desc}${a.gastoPagado?' <span style="font-size:10px;color:var(--green)">pagado</span>':''}</div>
+          <div class="cf-alloc-date">Fecha: ${fmtDate(a.fecha)} · <span style="color:${pc}">${a.prioridad||'media'}</span></div>
+        </div>
+        <div class="cf-alloc-amt" style="${a.gastoPagado?'color:var(--green)':''}">−${fmt(a.amount)}</div>
+      </div>`;
+    });
+    if(reserved>0) h+=`<div class="cf-reserved"><span>Reservado para gastos</span><span>${fmt(reserved)}</span></div>`;
+    if(inc.remaining>0) h+=`<div class="cf-leftover"><span>✦ Sobrante libre</span><span>${fmt(inc.remaining)}</span></div>`;
+    h+=`</div>`; return h;
   }).join('');
 
-  if(uncovered.length) html+=`<div style="background:var(--red-dim);border:1px solid var(--red-border);border-radius:var(--rs);padding:12px 16px;font-size:13px;color:var(--red);margin-top:12px">⚠️ Sin cobertura: ${uncovered.map(e=>`${e.descripcion} (faltan ${fmt(e.uncovered||e.monto)})`).join(', ')}</div>`;
-  if(totalSobrante>0) html+=`<div class="cf-summary-box"><div class="cf-summary-title">✦ Sobrantes por ingreso</div>${incW.filter(i=>i.remaining>0).map(i=>`<div class="cf-summary-row"><div class="cf-summary-label">${i.cliente}</div><div class="cf-summary-amt">${fmt(i.remaining)}</div></div>`).join('')}</div>`;
+  if(uncovered.length) html+=`<div style="background:var(--red-dim);border:1px solid var(--red-border);border-radius:var(--rs);padding:12px 16px;font-size:13px;color:var(--red);margin-top:12px">❌ Sin cobertura: ${uncovered.map(e=>`${e.descripcion} (faltan ${fmt(e.uncovered||e.monto)})`).join(', ')}</div>`;
+  if(totalSobrante>0) html+=`<div class="cf-summary-box"><div class="cf-summary-title">✦ El Profit por ingreso</div>${incW.filter(i=>i.remaining>0).map(i=>`<div class="cf-summary-row"><div class="cf-summary-label">${i.cliente}${!i.pagado?' (pendiente)':''}</div><div class="cf-summary-amt">${fmt(i.remaining)}</div></div>`).join('')}</div>`;
   return html;
 }
 
-// TOGGLE
-window.toggleIngreso = (id) => {
-  const card=document.getElementById('ic-'+id), bolsas=document.getElementById('bolsas-'+id), open=card.classList.contains('open');
+// ── TOGGLES ──
+window.toggleIngreso=(id)=>{
+  const card=document.getElementById('ic-'+id),bolsas=document.getElementById('bolsas-'+id),open=card.classList.contains('open');
   card.classList.toggle('open',!open); bolsas.style.display=open?'none':'block';
 };
-window.togglePagado = async (id) => {
+window.togglePagado=async id=>{
   const ing=mesData[activeMesId].ingresos.find(i=>i.id===id);
   ing.pagado=!ing.pagado;
   await updateDoc(doc(db,'users',uid,'meses',activeMesId,'ingresos',id),{pagado:ing.pagado});
   renderMes();
 };
+window.toggleGastoPagado=async id=>{
+  const g=mesData[activeMesId].gastos.find(g=>g.id===id);
+  g.pagado=!g.pagado;
+  await updateDoc(doc(db,'users',uid,'meses',activeMesId,'gastos',id),{pagado:g.pagado});
+  renderMes();
+};
 
-// INGRESOS CRUD
-window.openNuevoIngreso = () => showModal(buildIngresoModal(null));
-window.openEditarIngreso = (id) => showModal(buildIngresoModal(mesData[activeMesId].ingresos.find(i=>i.id===id)));
+// ── INGRESOS CRUD ──
+window.openNuevoIngreso=()=>showModal(buildIngresoModal(null));
+window.openEditarIngreso=id=>showModal(buildIngresoModal(mesData[activeMesId].ingresos.find(i=>i.id===id)));
 
-function buildIngresoModal(ing) {
+function buildIngresoModal(ing){
   const today=new Date().toISOString().split('T')[0];
-  const bolsas=ing?.bolsas||[{nombre:'Nómina',monto:'',esCashflow:false},{nombre:'Impuestos',monto:'',esCashflow:false},{nombre:'Cashflow',monto:'',esCashflow:true}];
+  const bolsas=ing?.bolsas||[
+    {nombre:'Nómina',monto:'',tipo:'otro'},
+    {nombre:'Impuestos',monto:'',tipo:'otro'},
+    {nombre:'Cashflow',monto:'',tipo:'cashflow'},
+    {nombre:'Personal',monto:'',tipo:'personal'}
+  ];
+  const typeOpts=tipo=>`
+    <option value="cashflow" ${tipo==='cashflow'||tipo===true?'selected':''}>✦ Cashflow</option>
+    <option value="personal" ${tipo==='personal'?'selected':''}>♦ Personal</option>
+    <option value="otro" ${(!tipo||tipo==='otro'||tipo===false)?'selected':''}>Otro</option>`;
   const bHTML=bolsas.map((b,i)=>`<div class="bolsa-editor-row" id="brow-${i}">
     <input type="text" placeholder="Nombre" value="${b.nombre||''}" id="bn-${i}">
     <input type="number" placeholder="Monto" value="${b.monto||''}" id="bm-${i}">
-    <label class="cf-check"><input type="checkbox" id="bc-${i}" ${b.esCashflow?'checked':''}> CF</label>
+    <select class="bolsa-type-select" id="bt-${i}">${typeOpts(b.tipo!==undefined?b.tipo:b.esCashflow?'cashflow':'otro')}</select>
     <button class="rem-bolsa" onclick="remBolsa(${i})">×</button></div>`).join('');
   return `<div class="modal-title">${ing?'Editar ingreso':'Nuevo ingreso'}</div>
     <div class="f-row"><label>Cliente / Fuente</label><input id="ing-cliente" class="modal-input" value="${ing?.cliente||''}" placeholder="Nombre del cliente"></div>
     <div class="f-row"><label>Monto total</label><input id="ing-total" class="modal-input" type="number" value="${ing?.total||''}" placeholder="0.00"></div>
     <div class="f-row"><label>Fecha esperada de cobro</label><input id="ing-fecha" class="modal-input" type="date" value="${ing?.fecha||today}"></div>
     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin:16px 0 8px">Distribución por bolsas</div>
-    <div style="display:grid;grid-template-columns:1fr 110px auto auto;gap:8px;margin-bottom:6px">
+    <div style="display:grid;grid-template-columns:1fr 100px auto auto;gap:8px;margin-bottom:6px">
       <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3)">Nombre</span>
       <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3)">Monto</span>
-      <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--green)">CF</span><span></span>
+      <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3)">Tipo</span><span></span>
     </div>
     <div id="bolsas-editor">${bHTML}</div>
     <button class="add-bolsa-btn" onclick="addBolsa()">＋ Agregar bolsa</button>
-    <div style="font-size:11px;color:var(--text3);margin-top:6px">Marca CF ✦ en la bolsa que va al cashflow</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6">✦ <b>Cashflow</b>: va al plan de pagos · ♦ <b>Personal</b>: gasto libre · <b>Otro</b>: nómina, impuestos, etc.</div>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-primary" onclick="guardarIngreso('${ing?.id||''}')">Guardar</button>
       <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
     </div>`;
 }
 
-window.addBolsa = () => {
-  const c=document.getElementById('bolsas-editor'), i=c.children.length;
-  const d=document.createElement('div'); d.className='bolsa-editor-row'; d.id=`brow-${i}`;
-  d.innerHTML=`<input type="text" placeholder="Nombre" id="bn-${i}"><input type="number" placeholder="Monto" id="bm-${i}"><label class="cf-check"><input type="checkbox" id="bc-${i}"> CF</label><button class="rem-bolsa" onclick="remBolsa(${i})">×</button>`;
+window.addBolsa=()=>{
+  const c=document.getElementById('bolsas-editor'),i=c.children.length;
+  const d=document.createElement('div');d.className='bolsa-editor-row';d.id=`brow-${i}`;
+  d.innerHTML=`<input type="text" placeholder="Nombre" id="bn-${i}"><input type="number" placeholder="Monto" id="bm-${i}"><select class="bolsa-type-select" id="bt-${i}"><option value="cashflow">✦ Cashflow</option><option value="personal">♦ Personal</option><option value="otro" selected>Otro</option></select><button class="rem-bolsa" onclick="remBolsa(${i})">×</button>`;
   c.appendChild(d);
 };
-window.remBolsa = (i) => { const r=document.getElementById('brow-'+i); if(r) r.remove(); };
+window.remBolsa=i=>{const r=document.getElementById('brow-'+i);if(r)r.remove();};
 
-window.guardarIngreso = async (existingId) => {
+window.guardarIngreso=async existingId=>{
   const cliente=document.getElementById('ing-cliente').value.trim();
   const total=parseFloat(document.getElementById('ing-total').value)||0;
   const fecha=document.getElementById('ing-fecha').value;
-  if (!cliente||!fecha) return alert('Completa cliente y fecha.');
+  if(!cliente||!fecha) return alert('Completa cliente y fecha.');
   const rows=document.querySelectorAll('#bolsas-editor .bolsa-editor-row');
   const bolsas=[];
   rows.forEach((_,i)=>{
     const n=document.getElementById(`bn-${i}`)?.value?.trim();
     const m=parseFloat(document.getElementById(`bm-${i}`)?.value)||0;
-    const cf=document.getElementById(`bc-${i}`)?.checked||false;
-    if(n) bolsas.push({nombre:n,monto:m,esCashflow:cf});
+    const t=document.getElementById(`bt-${i}`)?.value||'otro';
+    if(n) bolsas.push({nombre:n,monto:m,tipo:t,esCashflow:t==='cashflow'});
   });
   const id=existingId||Date.now().toString();
   const existing=existingId?mesData[activeMesId].ingresos.find(i=>i.id===existingId):null;
@@ -615,52 +692,50 @@ window.guardarIngreso = async (existingId) => {
   closeModal(); renderMes(); renderSidebar();
 };
 
-window.eliminarIngreso = async (id) => {
+window.eliminarIngreso=async id=>{
   if(!confirm('¿Eliminar este ingreso?')) return;
   await deleteDoc(doc(db,'users',uid,'meses',activeMesId,'ingresos',id));
   mesData[activeMesId].ingresos=mesData[activeMesId].ingresos.filter(i=>i.id!==id);
   renderMes();
 };
 
-// GASTOS CRUD
-window.openNuevoGasto = () => {
+// ── GASTOS CRUD ──
+window.openNuevoGasto=()=>{
   const today=new Date().toISOString().split('T')[0];
   showModal(`<div class="modal-title">Nuevo gasto</div>
     <div class="f-row"><label>Descripción</label><input id="g-desc" class="modal-input" placeholder="Ej: Renta, luz, tarjeta..."></div>
     <div class="f-row"><label>Monto</label><input id="g-monto" class="modal-input" type="number" placeholder="0.00"></div>
     <div class="f-row"><label>Fecha límite</label><input id="g-fecha" class="modal-input" type="date" value="${today}"></div>
-    <div class="f-row"><label>Prioridad</label><select id="g-prio" class="modal-select">
+    <div class="f-row"><label>Tipo / Prioridad</label><select id="g-prio" class="modal-select">
       <option value="alta">Alta — No puede esperar</option>
       <option value="media" selected>Media — Flexible</option>
       <option value="baja">Baja — Puede esperar</option>
+      <option value="personal">♦ Personal — Gasto libre</option>
     </select></div>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-primary" onclick="guardarGasto()">Guardar</button>
       <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
     </div>`);
 };
-
-window.guardarGasto = async () => {
+window.guardarGasto=async()=>{
   const descripcion=document.getElementById('g-desc').value.trim();
   const monto=parseFloat(document.getElementById('g-monto').value);
   const fecha=document.getElementById('g-fecha').value;
   const prioridad=document.getElementById('g-prio').value;
   if(!descripcion||!monto||!fecha) return alert('Completa todos los campos.');
-  const id=Date.now().toString(), obj={descripcion,monto,fecha,prioridad};
+  const id=Date.now().toString(), obj={descripcion,monto,fecha,prioridad,pagado:false};
   await setDoc(doc(db,'users',uid,'meses',activeMesId,'gastos',id),obj);
   mesData[activeMesId].gastos.push({id,...obj});
   mesData[activeMesId].gastos.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
   closeModal(); renderMes();
 };
-
-window.eliminarGasto = async (id) => {
+window.eliminarGasto=async id=>{
   if(!confirm('¿Eliminar?')) return;
   await deleteDoc(doc(db,'users',uid,'meses',activeMesId,'gastos',id));
   mesData[activeMesId].gastos=mesData[activeMesId].gastos.filter(g=>g.id!==id);
   renderMes();
 };
-
-window.eliminarMes = async () => {
+window.eliminarMes=async()=>{
   const mes=meses.find(m=>m.id===activeMesId);
   if(!confirm(`¿Eliminar "${mes?.nombre}"?`)) return;
   await deleteDoc(doc(db,'users',uid,'meses',activeMesId));
@@ -669,36 +744,36 @@ window.eliminarMes = async () => {
   document.getElementById('mes-content').innerHTML='<div class="empty" style="margin-top:60px">Selecciona o crea un mes.</div>';
 };
 
-// ANUAL
-async function renderAnual() {
+// ── ANUAL ──
+async function renderAnual(){
   const c=document.getElementById('anual-content');
   c.innerHTML='<div class="spinner"></div>';
   for(const m of meses) if(!mesData[m.id]) await loadMesData(m.id);
   const year=new Date().getFullYear();
   const totalFact=meses.reduce((s,m)=>s+(mesData[m.id]?.ingresos||[]).reduce((ss,i)=>ss+(i.total||0),0),0);
   const totalCob=meses.reduce((s,m)=>s+(mesData[m.id]?.ingresos||[]).filter(i=>i.pagado).reduce((ss,i)=>ss+(i.total||0),0),0);
-  const totalCF=meses.reduce((s,m)=>s+(mesData[m.id]?.ingresos||[]).filter(i=>i.pagado).reduce((ss,i)=>{const cf=(i.bolsas||[]).find(b=>b.esCashflow);return ss+(cf?cf.monto:0);},0),0);
+  const totalCF=meses.reduce((s,m)=>s+(mesData[m.id]?.ingresos||[]).reduce((ss,i)=>ss+cfDeIngreso(i),0),0);
   const maxFact=Math.max(...meses.map(m=>(mesData[m.id]?.ingresos||[]).reduce((s,i)=>s+(i.total||0),0)),1);
   const bars=meses.map(m=>{
     const f=(mesData[m.id]?.ingresos||[]).reduce((s,i)=>s+(i.total||0),0);
-    const pct=Math.round(f/maxFact*100);
-    return `<div class="bar-col"><div class="bar-wrap"><div class="bar bar-facturado" style="height:${pct}%" title="${fmt(f)}"></div></div><div class="bar-label">${m.nombre.substring(0,3)}</div></div>`;
+    return `<div class="bar-col"><div class="bar-wrap"><div class="bar bar-facturado" style="height:${Math.round(f/maxFact*100)}%" title="${fmt(f)}"></div></div><div class="bar-label">${m.nombre.substring(0,3)}</div></div>`;
   }).join('');
   const rows=meses.length?meses.map(m=>{
     const d=mesData[m.id]||{ingresos:[],gastos:[]};
     const f=d.ingresos.reduce((s,i)=>s+(i.total||0),0);
     const cob=d.ingresos.filter(i=>i.pagado).reduce((s,i)=>s+(i.total||0),0);
-    const pend=f-cob;
-    const cf=d.ingresos.filter(i=>i.pagado).reduce((s,i)=>{const b=(i.bolsas||[]).find(b=>b.esCashflow);return s+(b?b.monto:0);},0);
+    const cf=d.ingresos.reduce((s,i)=>s+cfDeIngreso(i),0);
     const gas=d.gastos.reduce((s,g)=>s+(g.monto||0),0);
+    const profit=cf-gas;
     return `<tr>
       <td><span class="mes-link" onclick="goToMes('${m.id}')">${m.nombre}</span></td>
       <td style="font-weight:600">${fmt(f)}</td>
-      <td style="font-weight:600;color:var(--green)">${fmt(cob)}${pend>0?`<br><span style="font-size:11px;color:var(--amber)">Pend: ${fmt(pend)}</span>`:''}</td>
-      <td style="font-weight:600;color:var(--amber)">${fmt(cf)}</td>
+      <td style="font-weight:600;color:var(--green)">${fmt(cob)}${f-cob>0?`<br><span style="font-size:11px;color:var(--amber)">Pend: ${fmt(f-cob)}</span>`:''}</td>
+      <td style="font-weight:600;color:var(--blue)">${fmt(cf)}</td>
       <td style="font-weight:600;color:var(--red)">${fmt(gas)}</td>
+      <td style="font-weight:600;color:${profit>=0?'var(--amber)':'var(--red)'}">${fmt(Math.abs(profit))}</td>
     </tr>`;
-  }).join(''):'<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3)">Sin meses registrados</td></tr>';
+  }).join(''):'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3)">Sin meses registrados</td></tr>';
 
   c.innerHTML=`
     <div class="anual-title">Resumen anual</div>
@@ -706,30 +781,30 @@ async function renderAnual() {
     <div class="anual-stats">
       <div class="stat-card"><div class="stat-label">Total facturado</div><div class="stat-value">${fmt(totalFact)}</div><div class="stat-sub">Todos los meses</div></div>
       <div class="stat-card"><div class="stat-label">Total cobrado</div><div class="stat-value" style="color:var(--green)">${fmt(totalCob)}</div><div class="stat-sub">${totalFact>0?Math.round(totalCob/totalFact*100):0}% del facturado</div></div>
-      <div class="stat-card"><div class="stat-label">Cashflow total</div><div class="stat-value" style="color:var(--amber)">${fmt(totalCF)}</div><div class="stat-sub">De ingresos cobrados</div></div>
+      <div class="stat-card"><div class="stat-label">CF proyectado</div><div class="stat-value" style="color:var(--blue)">${fmt(totalCF)}</div><div class="stat-sub">Todos los ingresos</div></div>
     </div>
     ${meses.length?`<div class="chart-wrap"><div class="chart-title">Facturado por mes</div><div class="chart-bars">${bars}</div></div>`:''}
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
       <table class="anual-table">
-        <thead><tr><th>Mes</th><th>Facturado</th><th>Cobrado</th><th>Cashflow</th><th>Gastos</th></tr></thead>
+        <thead><tr><th>Mes</th><th>Facturado</th><th>Cobrado</th><th>CF total</th><th>Gastos</th><th>Profit</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
 }
 
-window.goToMes = (id) => {
+window.goToMes=id=>{
   document.querySelectorAll('.nav-tab')[0].click();
   selectMes(id);
 };
 
-// MODAL
+// ── MODAL ──
 function showModal(html){document.getElementById('modal-box').innerHTML=html;document.getElementById('modal-overlay').classList.add('open');}
 window.closeModal=()=>document.getElementById('modal-overlay').classList.remove('open');
 document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('modal-overlay'))window.closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')window.closeModal();});
 
-// FORMAT
-function fmt(n){return '$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
+// ── FORMAT ──
+function fmt(n){return'$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-'),ms=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${parseInt(day)} ${ms[parseInt(m)-1]} ${y}`;}
 </script>
 </body>
