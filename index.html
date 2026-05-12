@@ -471,7 +471,7 @@ function renderMes(){
     <div class="mes-stats">
       <div class="stat-card"><div class="stat-label">Facturado</div><div class="stat-value">${fmt(totalFact)}</div><div class="stat-sub">${data.ingresos.length} ingreso(s)</div></div>
       <div class="stat-card"><div class="stat-label">Cobrado</div><div class="stat-value" style="color:var(--green)">${fmt(totalCob)}</div><div class="stat-sub">${data.ingresos.filter(i=>i.pagado).length} pagado(s)</div></div>
-      <div class="stat-card"><div class="stat-label">CF proyectado</div><div class="stat-value" style="color:var(--blue)">${fmt(cfTotal)}</div><div class="stat-sub">CF cobrado: ${fmt(cfCobrado)}</div></div>
+      <div class="stat-card"><div class="stat-label">Gastos del mes</div><div class="stat-value" style="color:var(--red)">${fmt(totalGas)}</div><div class="stat-sub">Pagados: ${fmt(gastosPagados)}</div></div>
       <div class="stat-card"><div class="stat-label">Gasto personal</div><div class="stat-value" style="color:var(--purple)">${fmt(totalPersonal)}</div><div class="stat-sub">De bolsas personales</div></div>
       <div class="stat-card ${profit<0?'alert-card':''}"><div class="stat-label">El Profit ✦</div><div class="stat-value" style="color:${profit>=0?'var(--amber)':'var(--red)'}">${fmt(Math.abs(profit))}</div><div class="stat-sub">${profit>=0?'Estimado del mes':'Faltante estimado'} · CF: ${fmt(cfTotal)} − Gastos: ${fmt(totalGas)}</div></div>
     </div>
