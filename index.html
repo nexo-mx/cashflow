@@ -436,7 +436,7 @@ function renderMes(){
   const gastosPagados = data.gastos.filter(g=>g.pagado).reduce((s,g)=>s+(g.monto||0),0);
 
   // Profit = lo que sobra del CF cobrado después de gastos
-  const profit = cfCobrado - totalGas;
+  const profit = cfTotal - totalGas;
 
   // Alerta: usa TODO el CF (cobrado + por cobrar). Los pendientes son seguros.
   // Solo alerta si para la fecha de un gasto la caja acumulada no alcanza.
@@ -473,7 +473,7 @@ function renderMes(){
       <div class="stat-card"><div class="stat-label">Cobrado</div><div class="stat-value" style="color:var(--green)">${fmt(totalCob)}</div><div class="stat-sub">${data.ingresos.filter(i=>i.pagado).length} pagado(s)</div></div>
       <div class="stat-card"><div class="stat-label">CF proyectado</div><div class="stat-value" style="color:var(--blue)">${fmt(cfTotal)}</div><div class="stat-sub">CF cobrado: ${fmt(cfCobrado)}</div></div>
       <div class="stat-card"><div class="stat-label">Gasto personal</div><div class="stat-value" style="color:var(--purple)">${fmt(totalPersonal)}</div><div class="stat-sub">De bolsas personales</div></div>
-      <div class="stat-card ${profit<0?'alert-card':''}"><div class="stat-label">El Profit ✦</div><div class="stat-value" style="color:${profit>=0?'var(--amber)':'var(--red)'}">${fmt(Math.abs(profit))}</div><div class="stat-sub">${profit>=0?'Sobrante del CF':'Faltante en CF'} · Gastos pagados: ${fmt(gastosPagados)}</div></div>
+      <div class="stat-card ${profit<0?'alert-card':''}"><div class="stat-label">El Profit ✦</div><div class="stat-value" style="color:${profit>=0?'var(--amber)':'var(--red)'}">${fmt(Math.abs(profit))}</div><div class="stat-sub">${profit>=0?'Estimado del mes':'Faltante estimado'} · CF: ${fmt(cfTotal)} − Gastos: ${fmt(totalGas)}</div></div>
     </div>
     <div class="section">
       <div class="section-header"><div class="section-title">Ingresos</div><button class="add-btn" onclick="openNuevoIngreso()">+ Agregar</button></div>
