@@ -438,30 +438,28 @@ function renderMes(){
   // Profit = lo que sobra del CF cobrado después de gastos
   const profit = cfCobrado - totalGas;
 
-  // Alerta: solo cuando el dinero cobrado real no alcanza para pagar a tiempo.
-  // Simulamos cronológicamente: en cada fecha de cobro sumamos CF, en cada fecha de gasto restamos.
-  // Si la caja cae negativa antes de un gasto → alerta real.
+  // Alerta: usa TODO el CF (cobrado + por cobrar). Los pendientes son seguros.
+  // Solo alerta si para la fecha de un gasto la caja acumulada no alcanza.
   const gastosNoCubiertos = [];
   {
-    // Eventos: ingresos cobrados aportan CF en su fecha, gastos no pagados lo restan en su fecha
     const eventos = [];
-    data.ingresos.filter(i=>i.pagado).forEach(i=>eventos.push({fecha:i.fecha||'',delta:cfDeIngreso(i),tipo:'ingreso'}));
+    data.ingresos.forEach(i=>{ const cf=cfDeIngreso(i); if(cf>0) eventos.push({fecha:i.fecha||'',delta:cf,tipo:'ingreso'}); });
     data.gastos.filter(g=>!g.pagado&&g.prioridad!=='personal').forEach(g=>eventos.push({fecha:g.fecha||'',delta:-g.monto,tipo:'gasto',gasto:g}));
-    eventos.sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.tipo==='ingreso'?-1:1)); // ingresos primero si misma fecha
+    eventos.sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.tipo==='ingreso'?-1:1));
     let caja = 0;
     for(const ev of eventos){
       caja += ev.delta;
       if(ev.tipo==='gasto' && caja < 0){
-        gastosNoCubiertos.push(ev.gasto);
-        caja = 0; // resetear para no propagar error en cascada
+        gastosNoCubiertos.push({...ev.gasto, faltante: Math.abs(caja)});
+        caja = 0;
       }
     }
   }
 
   let alertHTML = '';
   if(gastosNoCubiertos.length > 0){
-    const items = gastosNoCubiertos.map(g=>`<li><strong>${g.descripcion}</strong> — ${fmt(g.monto)} · fecha límite: ${fmtDate(g.fecha)}</li>`).join('');
-    alertHTML=`<div class="alert-banner"><strong>⚠️ Alerta de caja</strong>El dinero cobrado no alcanza para cubrir estos gastos a tiempo:<ul>${items}</ul></div>`;
+    const items = gastosNoCubiertos.map(g=>`<li><strong>${g.descripcion}</strong> — ${fmt(g.monto)} · fecha: ${fmtDate(g.fecha)} · faltan ${fmt(g.faltante)}</li>`).join('');
+    alertHTML=`<div class="alert-banner"><strong>⚠️ Alerta de caja</strong>No habrá suficiente dinero para cubrir estos gastos a tiempo:<ul>${items}</ul></div>`;
   }
 
   document.getElementById('mes-content').innerHTML=`
