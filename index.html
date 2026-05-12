@@ -176,7 +176,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .anual-content{padding:28px;overflow-y:auto}
 .anual-title{font-family:'Instrument Serif',serif;font-size:28px;color:var(--text);letter-spacing:-.3px;margin-bottom:4px}
 .anual-year{font-size:13px;color:var(--text3);margin-bottom:24px}
-.anual-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.anual-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px}
 @media(max-width:600px){.anual-stats{grid-template-columns:1fr}}
 .chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:28px}
 .chart-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:16px}
@@ -216,6 +216,38 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .rem-bolsa:hover{color:var(--red)}
 .add-bolsa-btn{background:none;border:1px dashed var(--border2);border-radius:var(--rs);color:var(--text3);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;padding:8px;width:100%;margin-top:4px;transition:all .15s}
 .add-bolsa-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+
+/* DEUDAS */
+.deudas-content{padding:28px;overflow-y:auto}
+.deudas-title{font-family:'Instrument Serif',serif;font-size:28px;color:var(--text);letter-spacing:-.3px;margin-bottom:4px}
+.deudas-sub{font-size:13px;color:var(--text3);margin-bottom:24px}
+.deudas-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.deuda-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:28px}
+.deuda-table{width:100%;border-collapse:collapse;font-size:13px}
+.deuda-table th{text-align:left;padding:10px 14px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap}
+.deuda-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.deuda-table tr:last-child td{border-bottom:none}
+.deuda-table tr:hover td{background:var(--surface2)}
+.deuda-concepto{font-weight:500;color:var(--text);cursor:pointer;transition:color .15s}
+.deuda-concepto:hover{color:var(--gold)}
+.deuda-actions{display:flex;gap:6px;align-items:center}
+.liquidar-btn{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:4px 10px;border-radius:var(--rs);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
+.liquidar-btn:hover{opacity:.8}
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.pagadas-section{opacity:.6}
+.prog-bar-wrap{width:80px;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.prog-bar{height:100%;border-radius:3px;background:var(--green)}
+/* DEUDA DETAIL MODAL */
+.mensualidades-list{margin-top:8px;max-height:320px;overflow-y:auto}
+.mens-row{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--rs);border:1px solid var(--border);margin-bottom:6px;background:var(--surface2);transition:border-color .2s}
+.mens-row.paid{border-color:var(--green-border);background:var(--green-dim)}
+.mens-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:transparent;transition:all .2s}
+.mens-check:hover{border-color:var(--green);color:var(--green)}
+.mens-check.on{background:var(--green);border-color:var(--green);color:#0c0c0e}
+.mens-label{flex:1;font-size:13px;font-weight:500}
+.mens-amount{font-size:13px;color:var(--text2)}
+.mens-status{font-size:11px;color:var(--green);font-weight:500}
 
 /* UTILS */
 .divider{border:none;border-top:1px solid var(--border);margin:24px 0}
@@ -263,6 +295,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="showPage('mes',this)">Mes</button>
         <button class="nav-tab" onclick="showPage('anual',this)">Año</button>
+        <button class="nav-tab" onclick="showPage('deudas',this)">Deudas</button>
       </div>
     </div>
     <div class="user-area">
@@ -286,6 +319,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     </div>
     <div class="page" id="page-anual">
       <div class="anual-content" id="anual-content"><div class="spinner"></div></div>
+    </div>
+    <div class="page" id="page-deudas">
+      <div class="deudas-content" id="deudas-content"><div class="spinner"></div></div>
     </div>
   </div>
 </div>
@@ -358,6 +394,7 @@ window.showPage=(page,btn)=>{
   document.getElementById('page-'+page).classList.add('active');
   btn.classList.add('active');
   if(page==='anual') renderAnual();
+  if(page==='deudas') renderDeudas();
 };
 
 // ── MESES ──
@@ -775,11 +812,9 @@ async function renderAnual(){
       <td><span class="mes-link" onclick="goToMes('${m.id}')">${m.nombre}</span></td>
       <td style="font-weight:600">${fmt(f)}</td>
       <td style="font-weight:600;color:var(--green)">${fmt(cob)}${f-cob>0?`<br><span style="font-size:11px;color:var(--amber)">Pend: ${fmt(f-cob)}</span>`:''}</td>
-      <td style="font-weight:600;color:var(--blue)">${fmt(cf)}</td>
       <td style="font-weight:600;color:var(--red)">${fmt(gas)}</td>
-      <td style="font-weight:600;color:${profit>=0?'var(--amber)':'var(--red)'}">${fmt(Math.abs(profit))}</td>
     </tr>`;
-  }).join(''):'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3)">Sin meses registrados</td></tr>';
+  }).join(''):'<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3)">Sin meses registrados</td></tr>';
 
   c.innerHTML=`
     <div class="anual-title">Resumen anual</div>
@@ -787,12 +822,11 @@ async function renderAnual(){
     <div class="anual-stats">
       <div class="stat-card"><div class="stat-label">Total facturado</div><div class="stat-value">${fmt(totalFact)}</div><div class="stat-sub">Todos los meses</div></div>
       <div class="stat-card"><div class="stat-label">Total cobrado</div><div class="stat-value" style="color:var(--green)">${fmt(totalCob)}</div><div class="stat-sub">${totalFact>0?Math.round(totalCob/totalFact*100):0}% del facturado</div></div>
-      <div class="stat-card"><div class="stat-label">CF proyectado</div><div class="stat-value" style="color:var(--blue)">${fmt(totalCF)}</div><div class="stat-sub">Todos los ingresos</div></div>
     </div>
     ${meses.length?`<div class="chart-wrap"><div class="chart-title">Facturado por mes</div><div class="chart-bars">${bars}</div></div>`:''}
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
       <table class="anual-table">
-        <thead><tr><th>Mes</th><th>Facturado</th><th>Cobrado</th><th>CF total</th><th>Gastos</th><th>Profit</th></tr></thead>
+        <thead><tr><th>Mes</th><th>Facturado</th><th>Cobrado</th><th>Gastos</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
@@ -808,6 +842,215 @@ function showModal(html){document.getElementById('modal-box').innerHTML=html;doc
 window.closeModal=()=>document.getElementById('modal-overlay').classList.remove('open');
 document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('modal-overlay'))window.closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')window.closeModal();});
+
+
+// ── DEUDAS ──
+let deudas = [];
+
+async function loadDeudas(){
+  const snap = await getDocs(collection(db,'users',uid,'deudas'));
+  deudas = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.creadoEn||0)-(b.creadoEn||0));
+}
+
+async function renderDeudas(){
+  const c = document.getElementById('deudas-content');
+  c.innerHTML='<div class="spinner"></div>';
+  if(!deudas.length) await loadDeudas();
+
+  const activas = deudas.filter(d=>!d.liquidada);
+  const pagadas = deudas.filter(d=>d.liquidada);
+
+  const faltante = d => Math.max(0, (d.montoRestante||0) - (d.ahorrado||0));
+  const progPct  = d => {
+    const total = d.mensualidades||1;
+    const pagadas = (d.pagos||[]).filter(p=>p.pagado).length;
+    return Math.round(pagadas/total*100);
+  };
+
+  const theadHTML = `<tr>
+    <th>Concepto</th><th>Monto total</th><th>Pago mensual</th>
+    <th>Mens. rest.</th><th>Monto restante</th><th>Ahorrado</th><th>Faltante</th><th>Progreso</th><th></th>
+  </tr>`;
+
+  const rowHTML = d => {
+    const mens = d.mensualidades||0;
+    const pagosHechos = (d.pagos||[]).filter(p=>p.pagado).length;
+    const restantes = Math.max(0, mens - pagosHechos);
+    const montoRest = restantes * (d.pagoMensual||0);
+    const ahorrado = d.ahorrado||0;
+    const falt = Math.max(0, montoRest - ahorrado);
+    const pct = mens>0?Math.round(pagosHechos/mens*100):0;
+    return `<tr>
+      <td><span class="deuda-concepto" onclick="openDeudaDetail('${d.id}')">${d.concepto}</span></td>
+      <td style="font-weight:600">${fmt(d.montoTotal||0)}</td>
+      <td style="color:var(--amber)">${fmt(d.pagoMensual||0)}</td>
+      <td style="text-align:center">${restantes} / ${mens}</td>
+      <td style="color:var(--red);font-weight:600">${fmt(montoRest)}</td>
+      <td style="color:var(--green)">${fmt(ahorrado)}</td>
+      <td style="color:${falt>0?'var(--red)':'var(--green)'};font-weight:600">${falt>0?fmt(falt):'✓ Cubierto'}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="prog-bar-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+          <span style="font-size:11px;color:var(--text3)">${pct}%</span>
+        </div>
+      </td>
+      <td>
+        <div class="deuda-actions">
+          <button class="liquidar-btn" onclick="liquidarDeuda('${d.id}')">Liquidar</button>
+          <button class="del-btn" onclick="eliminarDeuda('${d.id}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  };
+
+  const pagadasRowHTML = d => {
+    return `<tr style="opacity:.55">
+      <td><span style="font-weight:500;text-decoration:line-through;color:var(--text3)">${d.concepto}</span></td>
+      <td>${fmt(d.montoTotal||0)}</td>
+      <td>${fmt(d.pagoMensual||0)}</td>
+      <td style="text-align:center;color:var(--green)">✓ Liquidada</td>
+      <td>—</td><td>—</td><td style="color:var(--green)">✓</td>
+      <td><div class="prog-bar-wrap"><div class="prog-bar" style="width:100%"></div></div></td>
+      <td><button class="del-btn" onclick="eliminarDeuda('${d.id}')">✕</button></td>
+    </tr>`;
+  };
+
+  c.innerHTML = `
+    <div class="deudas-header">
+      <div>
+        <div class="deudas-title">Deudas</div>
+        <div class="deudas-sub">${activas.length} deuda(s) activa(s) · Click en el concepto para ver mensualidades</div>
+      </div>
+      <button class="add-btn" onclick="openNuevaDeuda()">+ Nueva deuda</button>
+    </div>
+
+    <div class="deuda-table-wrap">
+      <div class="section-label">Deudas activas</div>
+      ${activas.length ? `<table class="deuda-table"><thead>${theadHTML}</thead><tbody>${activas.map(rowHTML).join('')}</tbody></table>`
+        : '<div class="empty" style="border:none;border-radius:0">Sin deudas activas. ¡Bien hecho!</div>'}
+    </div>
+
+    ${pagadas.length ? `<div class="deuda-table-wrap pagadas-section">
+      <div class="section-label">Deudas liquidadas</div>
+      <table class="deuda-table"><thead>${theadHTML}</thead><tbody>${pagadas.map(pagadasRowHTML).join('')}</tbody></table>
+    </div>` : ''}
+  `;
+}
+
+window.openNuevaDeuda = () => {
+  showModal(`<div class="modal-title">Nueva deuda</div>
+    <div class="f-row"><label>Concepto</label><input id="d-concepto" class="modal-input" placeholder="Ej: Crédito auto, tarjeta Banamex..."></div>
+    <div class="f-row"><label>Monto total</label><input id="d-total" class="modal-input" type="number" placeholder="0.00"></div>
+    <div class="f-row"><label>Pago mensual</label><input id="d-mensual" class="modal-input" type="number" placeholder="0.00"></div>
+    <div class="f-row"><label>Número de mensualidades</label><input id="d-mens" class="modal-input" type="number" placeholder="Ej: 12"></div>
+    <div class="f-row"><label>Mes de inicio (primera mensualidad)</label><input id="d-inicio" class="modal-input" type="month" value="${new Date().toISOString().slice(0,7)}"></div>
+    <div class="f-row"><label>Ahorrado para liquidar</label><input id="d-ahorrado" class="modal-input" type="number" placeholder="0.00" value="0"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="guardarDeuda()">Guardar</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+};
+
+window.guardarDeuda = async () => {
+  const concepto  = document.getElementById('d-concepto').value.trim();
+  const montoTotal= parseFloat(document.getElementById('d-total').value)||0;
+  const pagoMensual=parseFloat(document.getElementById('d-mensual').value)||0;
+  const mensualidades=parseInt(document.getElementById('d-mens').value)||0;
+  const inicio    = document.getElementById('d-inicio').value;
+  const ahorrado  = parseFloat(document.getElementById('d-ahorrado').value)||0;
+  if(!concepto||!montoTotal||!mensualidades||!inicio) return alert('Completa los campos requeridos.');
+
+  // Generar lista de mensualidades
+  const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const [startY, startM] = inicio.split('-').map(Number);
+  const pagos = Array.from({length:mensualidades},(_,i)=>{
+    const totalM = (startM - 1) + i;
+    const m = totalM % 12;
+    const y = startY + Math.floor(totalM/12);
+    return { num: i+1, label:`Mes ${i+1}: ${MESES[m]} ${y}`, pagado:false };
+  });
+
+  const id = Date.now().toString();
+  const obj = {concepto,montoTotal,pagoMensual,mensualidades,inicio,ahorrado,pagos,liquidada:false,creadoEn:Date.now()};
+  await setDoc(doc(db,'users',uid,'deudas',id), obj);
+  deudas.push({id,...obj});
+  closeModal();
+  renderDeudas();
+};
+
+window.openDeudaDetail = (id) => {
+  const d = deudas.find(x=>x.id===id);
+  if(!d) return;
+  const pagos = d.pagos||[];
+  const pagosHechos = pagos.filter(p=>p.pagado).length;
+  const restantes = d.mensualidades - pagosHechos;
+
+  const listHTML = pagos.map((p,i)=>`
+    <div class="mens-row ${p.pagado?'paid':''}" id="mrow-${i}">
+      <button class="mens-check ${p.pagado?'on':''}" onclick="toggleMensualidad('${id}',${i})">✓</button>
+      <span class="mens-label">${p.label}</span>
+      <span class="mens-amount">${fmt(d.pagoMensual||0)}</span>
+      ${p.pagado?'<span class="mens-status">Pagado</span>':''}
+    </div>`).join('');
+
+  showModal(`<div class="modal-title">${d.concepto}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--surface2);border-radius:var(--rs);padding:12px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:4px">Mensualidades</div>
+        <div style="font-size:18px;font-weight:600">${pagosHechos} / ${d.mensualidades}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--rs);padding:12px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:4px">Restantes</div>
+        <div style="font-size:18px;font-weight:600;color:var(--amber)">${restantes} meses</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:10px">Mensualidades</div>
+    <div class="mensualidades-list">${listHTML}</div>
+    <div style="margin-top:16px">
+      <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:6px">Ahorrado para liquidar</label>
+      <div style="display:flex;gap:8px">
+        <input id="d-ahorrado-edit" class="modal-input" type="number" value="${d.ahorrado||0}" placeholder="0.00" style="flex:1">
+        <button class="modal-btn modal-btn-primary" style="flex:0 0 auto;width:auto;padding:10px 16px" onclick="guardarAhorrado('${id}')">Guardar</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cerrar</button>
+    </div>`);
+};
+
+window.toggleMensualidad = async (deudaId, idx) => {
+  const d = deudas.find(x=>x.id===deudaId);
+  if(!d) return;
+  d.pagos[idx].pagado = !d.pagos[idx].pagado;
+  await updateDoc(doc(db,'users',uid,'deudas',deudaId),{pagos:d.pagos});
+  // refresh modal in place
+  openDeudaDetail(deudaId);
+};
+
+window.guardarAhorrado = async (deudaId) => {
+  const d = deudas.find(x=>x.id===deudaId);
+  if(!d) return;
+  d.ahorrado = parseFloat(document.getElementById('d-ahorrado-edit').value)||0;
+  await updateDoc(doc(db,'users',uid,'deudas',deudaId),{ahorrado:d.ahorrado});
+  openDeudaDetail(deudaId);
+  renderDeudas();
+};
+
+window.liquidarDeuda = async (id) => {
+  if(!confirm('¿Marcar esta deuda como liquidada?')) return;
+  const d = deudas.find(x=>x.id===id);
+  if(!d) return;
+  d.liquidada = true;
+  await updateDoc(doc(db,'users',uid,'deudas',id),{liquidada:true});
+  renderDeudas();
+};
+
+window.eliminarDeuda = async (id) => {
+  if(!confirm('¿Eliminar esta deuda permanentemente?')) return;
+  await deleteDoc(doc(db,'users',uid,'deudas',id));
+  deudas = deudas.filter(x=>x.id!==id);
+  renderDeudas();
+};
 
 // ── FORMAT ──
 function fmt(n){return'$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
