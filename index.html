@@ -396,7 +396,7 @@ async function loadMesData(id){
 
 window.openNuevoMes=()=>{
   const M=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],now=new Date();
-  const opts=Array.from({length:12},(_,i)=>{const m=(now.getMonth()+i)%12,y=now.getFullYear()+Math.floor((now.getMonth()+i)/12);return`<option>${M[m]} ${y}</option>`;}).join('');
+  const y=now.getFullYear();const opts=M.map((nombre,i)=>`<option value="${nombre} ${y}" ${i===now.getMonth()?'selected':''}>${nombre} ${y}</option>`).join('')+M.map((nombre,i)=>`<option value="${nombre} ${y+1}">${nombre} ${y+1}</option>`).join('');
   showModal(`<div class="modal-title">Nuevo mes</div>
     <div class="f-row"><label>Mes</label><select id="nm-sel" class="modal-select">${opts}</select></div>
     <div class="f-row"><label>O nombre personalizado</label><input id="nm-custom" class="modal-input" placeholder="Ej: Q2 2025, Freelance..."></div>
