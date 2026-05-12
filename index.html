@@ -438,22 +438,30 @@ function renderMes(){
   // Profit = lo que sobra del CF cobrado después de gastos
   const profit = cfCobrado - totalGas;
 
-  // Alerta: revisar si CF proyectado (no cobrado aún) alcanza para gastos futuros
-  const gastosPendientes = data.gastos.filter(g=>!g.pagado);
-  const cfPendiente = data.ingresos.filter(i=>!i.pagado).reduce((s,i)=>s+cfDeIngreso(i),0);
+  // Alerta: solo cuando el dinero cobrado real no alcanza para pagar a tiempo.
+  // Simulamos cronológicamente: en cada fecha de cobro sumamos CF, en cada fecha de gasto restamos.
+  // Si la caja cae negativa antes de un gasto → alerta real.
   const gastosNoCubiertos = [];
-  let cfDisponible = cfCobrado - gastosPagados;
-  for(const g of gastosPendientes.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))){
-    if(cfDisponible >= g.monto){ cfDisponible -= g.monto; }
-    else if(cfDisponible + cfPendiente >= g.monto){ gastosNoCubiertos.push({...g, tipo:'con-pendiente'}); }
-    else{ gastosNoCubiertos.push({...g, tipo:'sin-cobertura'}); }
+  {
+    // Eventos: ingresos cobrados aportan CF en su fecha, gastos no pagados lo restan en su fecha
+    const eventos = [];
+    data.ingresos.filter(i=>i.pagado).forEach(i=>eventos.push({fecha:i.fecha||'',delta:cfDeIngreso(i),tipo:'ingreso'}));
+    data.gastos.filter(g=>!g.pagado&&g.prioridad!=='personal').forEach(g=>eventos.push({fecha:g.fecha||'',delta:-g.monto,tipo:'gasto',gasto:g}));
+    eventos.sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.tipo==='ingreso'?-1:1)); // ingresos primero si misma fecha
+    let caja = 0;
+    for(const ev of eventos){
+      caja += ev.delta;
+      if(ev.tipo==='gasto' && caja < 0){
+        gastosNoCubiertos.push(ev.gasto);
+        caja = 0; // resetear para no propagar error en cascada
+      }
+    }
   }
-  const hayAlerta = gastosNoCubiertos.length > 0;
 
   let alertHTML = '';
-  if(hayAlerta){
-    const items = gastosNoCubiertos.map(g=>`<li><strong>${g.descripcion}</strong> (${fmt(g.monto)}, fecha: ${fmtDate(g.fecha)}) — ${g.tipo==='sin-cobertura'?'❌ Sin cobertura incluso con ingresos pendientes':'⚠️ Solo se puede cubrir si cobras los ingresos pendientes'}</li>`).join('');
-    alertHTML=`<div class="alert-banner"><strong>⚠️ Alerta de cashflow</strong>Algunos gastos podrían no cubrirse a tiempo con el cashflow actual:<ul>${items}</ul></div>`;
+  if(gastosNoCubiertos.length > 0){
+    const items = gastosNoCubiertos.map(g=>`<li><strong>${g.descripcion}</strong> — ${fmt(g.monto)} · fecha límite: ${fmtDate(g.fecha)}</li>`).join('');
+    alertHTML=`<div class="alert-banner"><strong>⚠️ Alerta de caja</strong>El dinero cobrado no alcanza para cubrir estos gastos a tiempo:<ul>${items}</ul></div>`;
   }
 
   document.getElementById('mes-content').innerHTML=`
