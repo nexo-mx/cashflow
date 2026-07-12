@@ -572,7 +572,27 @@ function renderMes(){
     <div class="divider"></div>
     <div class="section">
       <div class="section-header"><div class="section-title">Gastos del mes</div><button class="add-btn" onclick="openNuevoGasto()">+ Agregar</button></div>
-      ${data.gastos.length?data.gastos.map(renderGastoRow).join(''):'<div class="empty">Sin gastos registrados.</div>'}
+      ${(()=>{
+        if(!data.gastos.length) return '<div class="empty">Sin gastos registrados.</div>';
+        // Calcular qué ingreso cubre cada gasto (mismo algoritmo que el plan)
+        const cfIngs=data.ingresos.filter(i=>cfDeIngreso(i)>0);
+        let incW=cfIngs.map(i=>({...i,rem:cfDeIngreso(i)}));
+        const coberturaMap={};
+        const gastosOrd=[...data.gastos].filter(g=>g.prioridad!=='personal').sort((a,b)=>{
+          const p={alta:0,media:1,baja:2};
+          if(a.fecha!==b.fecha) return (a.fecha||'').localeCompare(b.fecha||'');
+          return (p[a.prioridad]||1)-(p[b.prioridad]||1);
+        });
+        for(const exp of gastosOrd){
+          let cands=incW.filter(i=>i.rem>0&&(i.fecha||'')<=(exp.fecha||''));
+          if(!cands.length) cands=incW.filter(i=>i.rem>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+          else cands.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+          const single=cands.find(i=>i.rem>=exp.monto);
+          if(single){single.rem-=exp.monto;coberturaMap[exp.id]=single.cliente;}
+          else if(cands.length){coberturaMap[exp.id]=cands[0].cliente+(cands.length>1?'+':' (parcial)');}
+        }
+        return data.gastos.map(g=>renderGastoRow(g, coberturaMap[g.id])).join('');
+      })()}
       ${data.gastos.length?`<div style="font-size:12px;color:var(--text3);margin-top:10px">Pagados: ${fmt(gastosPagados)} · Pendientes: ${fmt(totalGas-gastosPagados)}</div>`:''}
     </div>
     <div class="divider"></div>
@@ -615,16 +635,20 @@ function renderBolsas(ing){
   return `<div class="bolsas-grid">${bolsas.map(b=>`<div class="bolsa-chip ${typeClass(b)}"><div class="bolsa-nombre">${b.nombre}${typeLabel(b)}</div><div class="bolsa-monto">${fmt(b.monto)}</div></div>`).join('')}</div>`;
 }
 
-function renderGastoRow(g){
+function renderGastoRow(g, cubiertoPor){
   const isPers=g.prioridad==='personal';
+  const cubLabel = cubiertoPor
+    ? `<span style="font-size:10px;color:var(--blue);background:var(--blue-dim);border:1px solid var(--blue-border);padding:1px 7px;border-radius:10px;margin-left:6px">💰 ${cubiertoPor}</span>`
+    : (!isPers ? `<span style="font-size:10px;color:var(--text3);padding:1px 6px">Sin cobertura</span>` : '');
   return `<div class="gasto-row ${g.pagado?'pagado-gasto':''}">
     <div class="gasto-prio prio-${isPers?'personal':g.prioridad||'media'}"></div>
     <div class="gasto-info">
-      <div class="gasto-desc">${g.descripcion}${isPers?' <span style="font-size:10px;color:var(--purple);background:var(--purple-dim);border:1px solid var(--purple-border);padding:1px 6px;border-radius:10px">personal</span>':''}</div>
+      <div class="gasto-desc">${g.descripcion}${isPers?' <span style="font-size:10px;color:var(--purple);background:var(--purple-dim);border:1px solid var(--purple-border);padding:1px 6px;border-radius:10px">personal</span>':''}${cubLabel}</div>
       <div class="gasto-fecha">${fmtDate(g.fecha)}${!isPers?' · '+g.prioridad:''}</div>
     </div>
     <div class="gasto-amount">${g.pagado?'✓ ':''} ${fmt(g.monto)}</div>
     <button class="gasto-check-btn ${g.pagado?'paid':''}" onclick="toggleGastoPagado('${g.id}')" title="${g.pagado?'Marcar pendiente':'Marcar como pagado'}">✓</button>
+    <button class="del-btn" style="color:var(--text3);font-size:12px;padding:4px 8px;border:1px solid var(--border2);border-radius:var(--rs)" onclick="openEditarGasto('${g.id}')">✎</button>
     <button class="del-btn" onclick="eliminarGasto('${g.id}')">✕</button>
   </div>`;
 }
@@ -796,32 +820,38 @@ window.eliminarIngreso=async id=>{
 };
 
 // ── GASTOS CRUD ──
-window.openNuevoGasto=()=>{
+
+function buildGastoModal(g){
   const today=new Date().toISOString().split('T')[0];
-  showModal(`<div class="modal-title">Nuevo gasto</div>
-    <div class="f-row"><label>Descripción</label><input id="g-desc" class="modal-input" placeholder="Ej: Renta, luz, tarjeta..."></div>
-    <div class="f-row"><label>Monto</label><input id="g-monto" class="modal-input" type="number" placeholder="0.00"></div>
-    <div class="f-row"><label>Fecha límite</label><input id="g-fecha" class="modal-input" type="date" value="${today}"></div>
-    <div class="f-row"><label>Tipo / Prioridad</label><select id="g-prio" class="modal-select">
-      <option value="alta">Alta — No puede esperar</option>
-      <option value="media" selected>Media — Flexible</option>
-      <option value="baja">Baja — Puede esperar</option>
-      <option value="personal">♦ Personal — Gasto libre</option>
-    </select></div>
+  const prioOpts=val=>`
+    <option value="alta" ${val==='alta'?'selected':''}>Alta — No puede esperar</option>
+    <option value="media" ${val==='media'||!val?'selected':''}>Media — Flexible</option>
+    <option value="baja" ${val==='baja'?'selected':''}>Baja — Puede esperar</option>
+    <option value="personal" ${val==='personal'?'selected':''}>♦ Personal — Gasto libre</option>`;
+  return `<div class="modal-title">${g?'Editar gasto':'Nuevo gasto'}</div>
+    <div class="f-row"><label>Descripción</label><input id="g-desc" class="modal-input" value="${g?.descripcion||''}" placeholder="Ej: Renta, luz, tarjeta..."></div>
+    <div class="f-row"><label>Monto</label><input id="g-monto" class="modal-input" type="number" value="${g?.monto||''}" placeholder="0.00"></div>
+    <div class="f-row"><label>Fecha límite</label><input id="g-fecha" class="modal-input" type="date" value="${g?.fecha||today}"></div>
+    <div class="f-row"><label>Tipo / Prioridad</label><select id="g-prio" class="modal-select">${prioOpts(g?.prioridad)}</select></div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-primary" onclick="guardarGasto()">Guardar</button>
+      <button class="modal-btn modal-btn-primary" onclick="guardarGasto('${g?.id||''}')">Guardar</button>
       <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
-    </div>`);
-};
-window.guardarGasto=async()=>{
+    </div>`;
+}
+window.openNuevoGasto=()=>showModal(buildGastoModal(null));
+window.openEditarGasto=id=>showModal(buildGastoModal(mesData[activeMesId].gastos.find(g=>g.id===id)));
+window.guardarGasto=async(existingId)=>{
   const descripcion=document.getElementById('g-desc').value.trim();
   const monto=parseFloat(document.getElementById('g-monto').value);
   const fecha=document.getElementById('g-fecha').value;
   const prioridad=document.getElementById('g-prio').value;
   if(!descripcion||!monto||!fecha) return alert('Completa todos los campos.');
-  const id=Date.now().toString(), obj={descripcion,monto,fecha,prioridad,pagado:false};
+  const id=existingId||Date.now().toString();
+  const existing=existingId?mesData[activeMesId].gastos.find(g=>g.id===existingId):null;
+  const obj={descripcion,monto,fecha,prioridad,pagado:existing?.pagado||false};
   await setDoc(doc(db,'users',uid,'meses',activeMesId,'gastos',id),obj);
-  mesData[activeMesId].gastos.push({id,...obj});
+  if(existingId){const idx=mesData[activeMesId].gastos.findIndex(g=>g.id===existingId);mesData[activeMesId].gastos[idx]={id,...obj};}
+  else mesData[activeMesId].gastos.push({id,...obj});
   mesData[activeMesId].gastos.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
   closeModal(); renderMes();
 };
