@@ -276,6 +276,51 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .aport-del{background:none;border:none;color:var(--text3);cursor:pointer;padding:2px 6px;font-size:13px;transition:color .15s;border-radius:4px}
 .aport-del:hover{color:var(--red)}
 
+
+/* VIAJES */
+.viajes-content{padding:28px;overflow-y:auto}
+.viajes-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.viaje-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;transition:border-color .2s}
+.viaje-card:hover{border-color:var(--border2)}
+.viaje-card-header{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer}
+.viaje-icon{font-size:24px;flex-shrink:0}
+.viaje-info{flex:1;min-width:0}
+.viaje-nombre{font-size:15px;font-weight:600}
+.viaje-meta{font-size:12px;color:var(--text3);margin-top:2px}
+.viaje-totals{text-align:right;flex-shrink:0}
+.viaje-total-mxn{font-size:16px;font-weight:600;color:var(--text)}
+.viaje-total-usd{font-size:12px;color:var(--text3);margin-top:1px}
+.viaje-chevron{color:var(--text3);font-size:11px;transition:transform .2s;margin-left:8px;flex-shrink:0}
+.viaje-card.open .viaje-chevron{transform:rotate(180deg)}
+.viaje-body{border-top:1px solid var(--border);padding:16px 18px;display:none}
+
+/* gasto viaje row */
+.vgasto-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;background:var(--surface2);font-size:13px}
+.vgasto-info{flex:1;min-width:0}
+.vgasto-obj{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vgasto-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.vgasto-amounts{text-align:right;flex-shrink:0}
+.vgasto-mxn{font-weight:600;color:var(--red)}
+.vgasto-usd{font-size:11px;color:var(--text3)}
+.mp-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border);white-space:nowrap}
+
+/* viaje stats */
+.viaje-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:500px){.viaje-stats{grid-template-columns:1fr 1fr}}
+
+/* metodos de pago config */
+.mp-config{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 16px;margin-bottom:20px}
+.mp-config-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:10px}
+.mp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mp-chip{display:flex;align-items:center;gap:6px;background:var(--surface3);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:12px}
+.mp-chip-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:0;transition:color .15s}
+.mp-chip-del:hover{color:var(--red)}
+.mp-add-row{display:flex;gap:8px;margin-top:8px}
+.mp-add-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 12px;outline:none}
+.mp-add-input:focus{border-color:var(--gold)}
+.mp-add-btn{background:var(--surface3);border:1px solid var(--border2);color:var(--text2);padding:7px 14px;border-radius:var(--rs);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
+.mp-add-btn:hover{border-color:var(--gold);color:var(--gold)}
+
 /* UTILS */
 .divider{border:none;border-top:1px solid var(--border);margin:24px 0}
 .empty{text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--r)}
@@ -324,6 +369,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <button class="nav-tab" onclick="showPage('anual',this)">Año</button>
         <button class="nav-tab" onclick="showPage('deudas',this)">Deudas</button>
         <button class="nav-tab" onclick="showPage('ahorros',this)">Ahorros</button>
+        <button class="nav-tab" onclick="showPage('viajes',this)">Viajes</button>
       </div>
     </div>
     <div class="user-area">
@@ -353,6 +399,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     </div>
     <div class="page" id="page-ahorros">
       <div class="ahorros-content" id="ahorros-content"><div class="spinner"></div></div>
+    </div>
+    <div class="page" id="page-viajes">
+      <div class="viajes-content" id="viajes-content"><div class="spinner"></div></div>
     </div>
   </div>
 </div>
@@ -427,6 +476,7 @@ window.showPage=(page,btn)=>{
   if(page==='anual') renderAnual();
   if(page==='deudas') renderDeudas();
   if(page==='ahorros') renderAhorros();
+  if(page==='viajes') renderViajes();
 };
 
 // ── MESES ──
@@ -1372,6 +1422,263 @@ window.eliminarAhorro = async (id) => {
   ahorros = ahorros.filter(x=>x.id!==id);
   renderAhorros();
 };
+
+
+// ── VIAJES ──
+let viajes = [];
+let metodosPago = [];
+let viajeActivo = null; // id del viaje abierto en detalle
+
+async function loadViajes(){
+  const [vSnap, mpSnap] = await Promise.all([
+    getDocs(collection(db,'users',uid,'viajes')),
+    getDocs(collection(db,'users',uid,'metodosPago'))
+  ]);
+  viajes = vSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creadoEn||0)-(a.creadoEn||0));
+  metodosPago = mpSnap.docs.map(d=>({id:d.id,...d.data()}));
+  if(!metodosPago.length){
+    // defaults
+    const defaults = ['Efectivo MXN','Efectivo USD','Tarjeta débito','Tarjeta crédito'];
+    for(const nombre of defaults){
+      const id = Date.now().toString() + Math.random();
+      await setDoc(doc(db,'users',uid,'metodosPago',id.toString()),{nombre});
+      metodosPago.push({id,nombre});
+    }
+  }
+}
+
+async function renderViajes(){
+  const cont = document.getElementById('viajes-content');
+  cont.innerHTML = '<div class="spinner"></div>';
+  if(!viajes.length) await loadViajes();
+
+  const totalMXN = viajes.reduce((s,v)=>(v.gastos||[]).reduce((ss,g)=>ss+(g.mxn||0),s),0);
+  const totalUSD = viajes.reduce((s,v)=>(v.gastos||[]).reduce((ss,g)=>ss+(g.usd||0),s),0);
+
+  const mpChips = metodosPago.map(mp=>`
+    <div class="mp-chip">
+      <span>${mp.nombre}</span>
+      <button class="mp-chip-del" onclick="eliminarMetodoPago('${mp.id}')">×</button>
+    </div>`).join('');
+
+  const mpOpts = metodosPago.map(mp=>`<option value="${mp.nombre}">${mp.nombre}</option>`).join('');
+
+  const tarjetas = viajes.map(v=>{
+    const gastos = v.gastos||[];
+    const totMXN = gastos.reduce((s,g)=>s+(g.mxn||0),0);
+    const totUSD = gastos.reduce((s,g)=>s+(g.usd||0),0);
+    const isOpen = viajeActivo === v.id;
+
+    const gastosHTML = gastos.length ? gastos.map((g,i)=>`
+      <div class="vgasto-row">
+        <div class="vgasto-info">
+          <div class="vgasto-obj">${g.objeto}</div>
+          <div class="vgasto-meta">${g.fecha||'—'} · <span class="mp-tag">${g.metodoPago||'—'}</span></div>
+        </div>
+        <div class="vgasto-amounts">
+          <div class="vgasto-mxn">$${(g.mxn||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})} MXN</div>
+          <div class="vgasto-usd">$${(g.usd||0).toFixed(2)} USD</div>
+        </div>
+        <button class="del-btn" onclick="eliminarGastoViaje('${v.id}',${i})">✕</button>
+      </div>`).join('')
+    : '<div style="font-size:12px;color:var(--text3);padding:8px 0">Sin gastos aún.</div>';
+
+    const mpOptsLocal = metodosPago.map(mp=>`<option value="${mp.nombre}">${mp.nombre}</option>`).join('');
+    const tc = v.tipoCambio||17;
+
+    return `<div class="viaje-card ${isOpen?'open':''}" id="vc-${v.id}">
+      <div class="viaje-card-header" onclick="toggleViaje('${v.id}')">
+        <div class="viaje-icon">✈️</div>
+        <div class="viaje-info">
+          <div class="viaje-nombre">${v.nombre}</div>
+          <div class="viaje-meta">${v.destino||''} · TC: $${tc} · ${gastos.length} gasto(s)</div>
+        </div>
+        <div class="viaje-totals">
+          <div class="viaje-total-mxn">$${totMXN.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})} MXN</div>
+          <div class="viaje-total-usd">$${totUSD.toFixed(2)} USD</div>
+        </div>
+        <span class="viaje-chevron">▼</span>
+      </div>
+      <div class="viaje-body" style="display:${isOpen?'block':'none'}" id="vb-${v.id}">
+        <div class="viaje-stats">
+          <div class="stat-card" style="padding:12px">
+            <div class="stat-label">Total MXN</div>
+            <div class="stat-value" style="font-size:18px;color:var(--red)">$${totMXN.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+          </div>
+          <div class="stat-card" style="padding:12px">
+            <div class="stat-label">Total USD</div>
+            <div class="stat-value" style="font-size:18px;color:var(--blue)">$${totUSD.toFixed(2)}</div>
+          </div>
+          <div class="stat-card" style="padding:12px">
+            <div class="stat-label">Tipo de cambio</div>
+            <div class="stat-value" style="font-size:18px;color:var(--amber)">$${tc}</div>
+            <div class="stat-sub">MXN por USD</div>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:10px">Gastos</div>
+        <div id="vgastos-${v.id}">${gastosHTML}</div>
+
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:14px;margin-top:14px">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:12px">+ Agregar gasto</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <input id="vg-obj-${v.id}" class="modal-input" placeholder="Objeto / concepto">
+            <input id="vg-fecha-${v.id}" class="modal-input" type="date" value="${new Date().toISOString().split('T')[0]}">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div>
+              <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px">Precio MXN → convierte a USD</label>
+              <input id="vg-mxn-${v.id}" class="modal-input" type="number" placeholder="0.00 MXN" oninput="convertViajeTC('${v.id}','mxn',${tc})">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px">Precio USD → convierte a MXN</label>
+              <input id="vg-usd-${v.id}" class="modal-input" type="number" placeholder="0.00 USD" oninput="convertViajeTC('${v.id}','usd',${tc})">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <select id="vg-mp-${v.id}" class="modal-select"><option value="">Método de pago</option>${mpOptsLocal}</select>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3)">
+              TC usado: <strong style="color:var(--amber)">$${tc} MXN/USD</strong>
+            </div>
+          </div>
+          <button class="modal-btn modal-btn-primary" style="width:100%" onclick="agregarGastoViaje('${v.id}',${tc})">+ Agregar</button>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:12px">
+          <button class="del-btn" style="color:var(--text3);font-size:12px" onclick="eliminarViaje('${v.id}')">✕ Eliminar viaje</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML = `
+    <div class="viajes-header">
+      <div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.3px">Viajes</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:2px">${viajes.length} viaje(s)</div>
+      </div>
+      <button class="add-btn" onclick="openNuevoViaje()">+ Nuevo viaje</button>
+    </div>
+
+    ${viajes.length ? `<div class="mes-stats" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Total gastado MXN</div><div class="stat-value" style="color:var(--red)">$${totalMXN.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</div><div class="stat-sub">Todos los viajes</div></div>
+      <div class="stat-card"><div class="stat-label">Total gastado USD</div><div class="stat-value" style="color:var(--blue)">$${totalUSD.toFixed(2)}</div><div class="stat-sub">Todos los viajes</div></div>
+    </div>` : ''}
+
+    <div class="mp-config">
+      <div class="mp-config-title">Métodos de pago</div>
+      <div class="mp-chips" id="mp-chips">${mpChips}</div>
+      <div class="mp-add-row">
+        <input class="mp-add-input" id="mp-new-input" placeholder="Nuevo método (ej: Amex, PayPal...)" onkeydown="if(event.key==='Enter')agregarMetodoPago()">
+        <button class="mp-add-btn" onclick="agregarMetodoPago()">+ Agregar</button>
+      </div>
+    </div>
+
+    ${tarjetas || '<div class="empty">Sin viajes registrados. ¡Crea el primero!</div>'}
+  `;
+}
+
+window.toggleViaje = (id) => {
+  const card = document.getElementById('vc-'+id);
+  const body = document.getElementById('vb-'+id);
+  const isOpen = card.classList.contains('open');
+  card.classList.toggle('open', !isOpen);
+  body.style.display = isOpen ? 'none' : 'block';
+  viajeActivo = isOpen ? null : id;
+};
+
+window.convertViajeTC = (vid, desde, tc) => {
+  if(desde==='mxn'){
+    const mxn = parseFloat(document.getElementById('vg-mxn-'+vid).value)||0;
+    document.getElementById('vg-usd-'+vid).value = mxn>0 ? (mxn/tc).toFixed(2) : '';
+  } else {
+    const usd = parseFloat(document.getElementById('vg-usd-'+vid).value)||0;
+    document.getElementById('vg-mxn-'+vid).value = usd>0 ? (usd*tc).toFixed(2) : '';
+  }
+};
+
+window.agregarGastoViaje = async (vid, tc) => {
+  const v = viajes.find(x=>x.id===vid);
+  if(!v) return;
+  const objeto = document.getElementById('vg-obj-'+vid).value.trim();
+  const fecha = document.getElementById('vg-fecha-'+vid).value;
+  const mxn = parseFloat(document.getElementById('vg-mxn-'+vid).value)||0;
+  const usd = parseFloat(document.getElementById('vg-usd-'+vid).value)||0;
+  const metodoPago = document.getElementById('vg-mp-'+vid).value;
+  if(!objeto) return alert('Escribe el objeto del gasto.');
+  if(!mxn && !usd) return alert('Ingresa el monto en MXN o USD.');
+  const gasto = {
+    objeto, fecha, metodoPago,
+    mxn: mxn || parseFloat((usd*tc).toFixed(2)),
+    usd: usd || parseFloat((mxn/tc).toFixed(2))
+  };
+  if(!v.gastos) v.gastos=[];
+  v.gastos.push(gasto);
+  await updateDoc(doc(db,'users',uid,'viajes',vid),{gastos:v.gastos});
+  viajeActivo = vid;
+  renderViajes();
+};
+
+window.eliminarGastoViaje = async (vid, idx) => {
+  const v = viajes.find(x=>x.id===vid);
+  if(!v) return;
+  v.gastos.splice(idx,1);
+  await updateDoc(doc(db,'users',uid,'viajes',vid),{gastos:v.gastos});
+  viajeActivo = vid;
+  renderViajes();
+};
+
+window.openNuevoViaje = () => {
+  showModal(`<div class="modal-title">Nuevo viaje</div>
+    <div class="f-row"><label>Nombre del viaje</label><input id="nv-nombre" class="modal-input" placeholder="Ej: NYC Agosto 2025, Cancún Verano..."></div>
+    <div class="f-row"><label>Destino</label><input id="nv-destino" class="modal-input" placeholder="Ej: Nueva York, Miami..."></div>
+    <div class="f-row"><label>Tipo de cambio (MXN por 1 USD)</label><input id="nv-tc" class="modal-input" type="number" placeholder="Ej: 17.50" step="0.01"></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:-8px;margin-bottom:12px">Puedes ajustar este valor cuando quieras</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="crearViaje()">Crear viaje</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+};
+
+window.crearViaje = async () => {
+  const nombre = document.getElementById('nv-nombre').value.trim();
+  const destino = document.getElementById('nv-destino').value.trim();
+  const tipoCambio = parseFloat(document.getElementById('nv-tc').value)||17;
+  if(!nombre) return alert('Ponle un nombre al viaje.');
+  const id = Date.now().toString();
+  const obj = {nombre, destino, tipoCambio, gastos:[], creadoEn:Date.now()};
+  await setDoc(doc(db,'users',uid,'viajes',id), obj);
+  viajes.unshift({id,...obj});
+  closeModal();
+  viajeActivo = id;
+  renderViajes();
+};
+
+window.eliminarViaje = async (id) => {
+  if(!confirm('¿Eliminar este viaje y todos sus gastos?')) return;
+  await deleteDoc(doc(db,'users',uid,'viajes',id));
+  viajes = viajes.filter(x=>x.id!==id);
+  viajeActivo = null;
+  renderViajes();
+};
+
+window.agregarMetodoPago = async () => {
+  const input = document.getElementById('mp-new-input');
+  const nombre = input.value.trim();
+  if(!nombre) return;
+  const id = Date.now().toString();
+  await setDoc(doc(db,'users',uid,'metodosPago',id),{nombre});
+  metodosPago.push({id,nombre});
+  input.value = '';
+  renderViajes();
+};
+
+window.eliminarMetodoPago = async (id) => {
+  await deleteDoc(doc(db,'users',uid,'metodosPago',id));
+  metodosPago = metodosPago.filter(x=>x.id!==id);
+  renderViajes();
+};
+
 
 // ── FORMAT ──
 function fmt(n){return'$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
