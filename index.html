@@ -1383,7 +1383,10 @@ window.openAhorroDetail = (id) => {
       <input id="ap-monto" class="modal-input" type="number" placeholder="Monto">
     </div>
     <input id="ap-nota" class="modal-input" placeholder="Nota (opcional)" style="margin-bottom:8px">
-    <button class="modal-btn modal-btn-primary" style="width:100%;margin-bottom:16px" onclick="agregarAportacion('${id}')">+ Agregar aportación</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <button class="modal-btn modal-btn-primary" onclick="agregarAportacion('${id}', 1)">+ Aportación</button>
+      <button class="modal-btn" style="background:var(--red-dim);border-color:var(--red-border);color:var(--red)" onclick="agregarAportacion('${id}', -1)">− Retiro</button>
+    </div>
     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:10px">Historial</div>
     <div class="mensualidades-list">${histHTML}</div>
     <div class="modal-actions" style="margin-top:12px">
@@ -1391,7 +1394,7 @@ window.openAhorroDetail = (id) => {
     </div>`);
 };
 
-window.agregarAportacion = async (id) => {
+window.agregarAportacion = async (id, signo=1) => {
   const a = ahorros.find(x=>x.id===id);
   if(!a) return;
   const fecha = document.getElementById('ap-fecha').value;
@@ -1399,7 +1402,7 @@ window.agregarAportacion = async (id) => {
   const nota = document.getElementById('ap-nota').value.trim();
   if(!monto||!fecha) return alert('Ingresa fecha y monto.');
   if(!a.aportaciones) a.aportaciones=[];
-  a.aportaciones.push({fecha,monto,nota});
+  a.aportaciones.push({fecha, monto: monto * signo, nota: nota || (signo<0?'Retiro':'')});
   await updateDoc(doc(db,'users',uid,'ahorros',id),{aportaciones:a.aportaciones});
   openAhorroDetail(id);
   renderAhorros();
