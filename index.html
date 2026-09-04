@@ -1027,7 +1027,10 @@ async function renderAnual(){
   }).join(''):'<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3)">Sin meses registrados</td></tr>';
 
   c.innerHTML=`
-    <div class="anual-title">Resumen anual</div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px">
+      <div class="anual-title">Resumen anual</div>
+      <button onclick="exportarExcel()" style="background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);padding:8px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">⬇ Exportar Excel</button>
+    </div>
     <div class="anual-year">${year}</div>
     <div class="anual-stats">
       <div class="stat-card"><div class="stat-label">Total facturado</div><div class="stat-value">${fmt(totalFact)}</div><div class="stat-sub">Todos los meses</div></div>
@@ -1959,9 +1962,270 @@ function renderCalBody(mes, data){
 }
 
 
+
+// ── EXPORTAR EXCEL ──
+window.exportarExcel = async () => {
+  // Make sure all month data is loaded
+  for(const m of meses) if(!mesData[m.id]) await loadMesData(m.id);
+
+  const WB = XLSX.utils.book_new();
+  const year = new Date().getFullYear();
+
+  // ── Styles helper (background + font) ──
+  const cs = (bgHex, bold=false, color='FF000000', sz=11, align='left') => ({
+    fill:{patternType:'solid', fgColor:{rgb:bgHex}},
+    font:{bold, color:{rgb:color}, sz, name:'Arial'},
+    alignment:{horizontal:align, vertical:'center', wrapText:true},
+    border:{top:{style:'thin',color:{rgb:'FFE0E0E0'}},bottom:{style:'thin',color:{rgb:'FFE0E0E0'}},left:{style:'thin',color:{rgb:'FFE0E0E0'}},right:{style:'thin',color:{rgb:'FFE0E0E0'}}}
+  });
+
+  const HEADER_BG   = '1A1A2E'; // dark navy
+  const INCOME_BG   = 'E8F8F0'; // light green
+  const EXPENSE_BG  = 'FEF2F2'; // light red
+  const PAID_BG     = 'F0FFF4'; // mint
+  const SUMMARY_BG  = 'FFF8E1'; // light amber
+  const TITLE_BG    = '0D1B2A'; // very dark
+
+  const currency = v => ({t:'n', v: v||0, z:'$#,##0.00'});
+  const pct      = v => ({t:'n', v: (v||0)/100, z:'0.0%'});
+
+  // ══════════════════════════════════════
+  // HOJA 1: RESUMEN AÑO
+  // ══════════════════════════════════════
+  const wsResumen = XLSX.utils.aoa_to_sheet([]);
+  const rData = [];
+
+  // Title
+  rData.push([{v:`Resumen Anual ${year}`, s:cs(TITLE_BG,true,'FFC9A96E',16,'center')},'','','','','','']);
+
+  // Summary stats
+  const totalFact = meses.reduce((s,m)=>(mesData[m.id]?.ingresos||[]).reduce((ss,i)=>ss+(i.total||0),s),0);
+  const totalCob  = meses.reduce((s,m)=>(mesData[m.id]?.ingresos||[]).filter(i=>i.pagado).reduce((ss,i)=>ss+(i.total||0),s),0);
+  const totalGas  = meses.reduce((s,m)=>(mesData[m.id]?.gastos||[]).reduce((ss,g)=>ss+(g.monto||0),s),0);
+  const totalCF   = meses.reduce((s,m)=>(mesData[m.id]?.ingresos||[]).reduce((ss,i)=>{
+    const b=(i.bolsas||[]).find(b=>b.esCashflow||b.tipo==='cashflow');return ss+(b?b.monto:0);},s),0);
+  const totalProfit = totalCF - totalGas;
+
+  rData.push(['']);
+  rData.push([{v:'Total facturado',s:cs(SUMMARY_BG,true)},{v:'Total cobrado',s:cs(SUMMARY_BG,true)},{v:'Cashflow total',s:cs(SUMMARY_BG,true)},{v:'Total gastos',s:cs(SUMMARY_BG,true)},{v:'Profit estimado',s:cs(SUMMARY_BG,true)},'','']);
+  rData.push([currency(totalFact),currency(totalCob),currency(totalCF),currency(totalGas),currency(totalProfit),'','']);
+  rData.push(['']);
+
+  // Table header
+  rData.push([
+    {v:'Mes',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Facturado',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Cobrado',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Pendiente',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Cashflow',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Gastos',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Profit',s:cs(HEADER_BG,true,'FFFFFFFF')}
+  ]);
+
+  meses.forEach(m=>{
+    const d = mesData[m.id]||{ingresos:[],gastos:[]};
+    const fact = d.ingresos.reduce((s,i)=>s+(i.total||0),0);
+    const cob  = d.ingresos.filter(i=>i.pagado).reduce((s,i)=>s+(i.total||0),0);
+    const pend = fact - cob;
+    const cf   = d.ingresos.reduce((s,i)=>{const b=(i.bolsas||[]).find(b=>b.esCashflow||b.tipo==='cashflow');return s+(b?b.monto:0);},0);
+    const gas  = d.gastos.reduce((s,g)=>s+(g.monto||0),0);
+    const prof = cf - gas;
+    rData.push([
+      {v:m.nombre, s:cs('FFFFFF',true)},
+      {v:fact||0, t:'n', z:'$#,##0.00', s:cs('FFFFFF')},
+      {v:cob||0,  t:'n', z:'$#,##0.00', s:cs(INCOME_BG)},
+      {v:pend||0, t:'n', z:'$#,##0.00', s:cs(pend>0?'FFF3E0':'FFFFFF')},
+      {v:cf||0,   t:'n', z:'$#,##0.00', s:cs(INCOME_BG)},
+      {v:gas||0,  t:'n', z:'$#,##0.00', s:cs(EXPENSE_BG)},
+      {v:prof,    t:'n', z:'$#,##0.00', s:cs(prof>=0?INCOME_BG:EXPENSE_BG)}
+    ]);
+  });
+
+  XLSX.utils.sheet_add_aoa(wsResumen, rData, {origin:'A1'});
+  wsResumen['!cols'] = [{wch:18},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14}];
+  wsResumen['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
+  wsResumen['!rows'] = [{hpt:30},{hpt:6},{hpt:20},{hpt:22}];
+  XLSX.utils.book_append_sheet(WB, wsResumen, 'Resumen Anual');
+
+  // ══════════════════════════════════════
+  // HOJA 2: CLIENTES
+  // ══════════════════════════════════════
+  const wsClientes = XLSX.utils.aoa_to_sheet([]);
+  const clienteMap = {};
+  meses.forEach(m=>{
+    (mesData[m.id]?.ingresos||[]).forEach(ing=>{
+      if(!clienteMap[ing.cliente]) clienteMap[ing.cliente]={total:0,cobrado:0,cf:0,pagos:0,meses:[]};
+      const b=(ing.bolsas||[]).find(b=>b.esCashflow||b.tipo==='cashflow');
+      clienteMap[ing.cliente].total   += ing.total||0;
+      clienteMap[ing.cliente].cf      += b?b.monto:0;
+      if(ing.pagado){ clienteMap[ing.cliente].cobrado+=ing.total||0; clienteMap[ing.cliente].pagos++; }
+      clienteMap[ing.cliente].meses.push(m.nombre);
+    });
+  });
+
+  const cData = [];
+  cData.push([{v:`Resumen por Cliente ${year}`, s:cs(TITLE_BG,true,'FFC9A96E',16,'center')},'','','','','']);
+  cData.push(['']);
+  cData.push([
+    {v:'Cliente',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Total facturado',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Total cobrado',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Cashflow generado',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Pagos recibidos',s:cs(HEADER_BG,true,'FFFFFFFF')},
+    {v:'Meses activo',s:cs(HEADER_BG,true,'FFFFFFFF')}
+  ]);
+
+  Object.entries(clienteMap).sort((a,b)=>b[1].total-a[1].total).forEach(([cliente,d])=>{
+    cData.push([
+      {v:cliente,s:cs('FFFFFF',true)},
+      {v:d.total,  t:'n', z:'$#,##0.00', s:cs('FFFFFF')},
+      {v:d.cobrado,t:'n', z:'$#,##0.00', s:cs(INCOME_BG)},
+      {v:d.cf,     t:'n', z:'$#,##0.00', s:cs(INCOME_BG)},
+      {v:d.pagos,  t:'n', s:cs('FFFFFF','center')},
+      {v:[...new Set(d.meses)].join(', '), s:cs('FFFFFF')}
+    ]);
+  });
+
+  XLSX.utils.sheet_add_aoa(wsClientes, cData, {origin:'A1'});
+  wsClientes['!cols']=[{wch:22},{wch:16},{wch:16},{wch:16},{wch:14},{wch:30}];
+  wsClientes['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}}];
+  XLSX.utils.book_append_sheet(WB, wsClientes, 'Clientes');
+
+  // ══════════════════════════════════════
+  // HOJAS INDIVIDUALES POR MES
+  // ══════════════════════════════════════
+  meses.forEach(mes=>{
+    const d = mesData[mes.id]||{ingresos:[],gastos:[]};
+    const ws = XLSX.utils.aoa_to_sheet([]);
+    const rows = [];
+
+    rows.push([{v:mes.nombre, s:cs(TITLE_BG,true,'FFC9A96E',15,'center')},'','','','']);
+    rows.push(['']);
+
+    // ── Ingresos ──
+    rows.push([{v:'INGRESOS', s:cs(HEADER_BG,true,'FFFFFFFF')},'','','','']);
+    rows.push([
+      {v:'Cliente',s:cs('2D4A3E',true,'FFFFFFFF')},
+      {v:'Fecha',s:cs('2D4A3E',true,'FFFFFFFF')},
+      {v:'Monto total',s:cs('2D4A3E',true,'FFFFFFFF')},
+      {v:'Cashflow',s:cs('2D4A3E',true,'FFFFFFFF')},
+      {v:'Estado',s:cs('2D4A3E',true,'FFFFFFFF')}
+    ]);
+
+    const ingTotFact = d.ingresos.reduce((s,i)=>s+(i.total||0),0);
+    const ingTotCF   = d.ingresos.reduce((s,i)=>{const b=(i.bolsas||[]).find(b=>b.esCashflow||b.tipo==='cashflow');return s+(b?b.monto:0);},0);
+
+    d.ingresos.forEach(ing=>{
+      const b=(ing.bolsas||[]).find(b=>b.esCashflow||b.tipo==='cashflow');
+      const bg = ing.pagado ? PAID_BG : 'FFFFFF';
+      rows.push([
+        {v:ing.cliente, s:cs(bg,true)},
+        {v:ing.fecha||'', s:cs(bg)},
+        {v:ing.total||0, t:'n', z:'$#,##0.00', s:cs(bg)},
+        {v:b?b.monto:0,  t:'n', z:'$#,##0.00', s:cs(bg)},
+        {v:ing.pagado?'✓ Cobrado':'Pendiente', s:cs(ing.pagado?PAID_BG:EXPENSE_BG,true)}
+      ]);
+    });
+    rows.push([
+      {v:'TOTAL', s:cs(INCOME_BG,true)},
+      {v:'', s:cs(INCOME_BG)},
+      {v:ingTotFact, t:'n', z:'$#,##0.00', s:cs(INCOME_BG,true)},
+      {v:ingTotCF,   t:'n', z:'$#,##0.00', s:cs(INCOME_BG,true)},
+      {v:'', s:cs(INCOME_BG)}
+    ]);
+
+    rows.push(['']);
+
+    // ── Bolsas ──
+    const todasBolsas = [];
+    d.ingresos.forEach(ing=>{
+      (ing.bolsas||[]).forEach(b=>{
+        todasBolsas.push({cliente:ing.cliente, nombre:b.nombre, monto:b.monto||0, tipo:b.tipo||'otro'});
+      });
+    });
+    if(todasBolsas.length){
+      rows.push([{v:'DISTRIBUCIÓN DE BOLSAS', s:cs(HEADER_BG,true,'FFFFFFFF')},'','','','']);
+      rows.push([
+        {v:'Cliente',s:cs('4A3728',true,'FFFFFFFF')},
+        {v:'Bolsa',s:cs('4A3728',true,'FFFFFFFF')},
+        {v:'Monto',s:cs('4A3728',true,'FFFFFFFF')},
+        {v:'Tipo',s:cs('4A3728',true,'FFFFFFFF')},
+        {v:'',s:cs('4A3728')}
+      ]);
+      todasBolsas.forEach(b=>{
+        const isCF = b.tipo==='cashflow';
+        const isP  = b.tipo==='personal';
+        const bg = isCF?INCOME_BG:isP?'F3E8FF':'FFFFFF';
+        rows.push([
+          {v:b.cliente, s:cs(bg)},
+          {v:b.nombre,  s:cs(bg,true)},
+          {v:b.monto,   t:'n', z:'$#,##0.00', s:cs(bg)},
+          {v:isCF?'✦ Cashflow':isP?'♦ Personal':'Otro', s:cs(bg)},
+          {v:'', s:cs(bg)}
+        ]);
+      });
+      rows.push(['']);
+    }
+
+    // ── Gastos ──
+    rows.push([{v:'GASTOS', s:cs(HEADER_BG,true,'FFFFFFFF')},'','','','']);
+    rows.push([
+      {v:'Descripción',s:cs('4A1E1E',true,'FFFFFFFF')},
+      {v:'Fecha',s:cs('4A1E1E',true,'FFFFFFFF')},
+      {v:'Monto',s:cs('4A1E1E',true,'FFFFFFFF')},
+      {v:'Prioridad',s:cs('4A1E1E',true,'FFFFFFFF')},
+      {v:'Estado',s:cs('4A1E1E',true,'FFFFFFFF')}
+    ]);
+
+    const gasTot = d.gastos.reduce((s,g)=>s+(g.monto||0),0);
+    d.gastos.forEach(g=>{
+      const bg = g.pagado ? PAID_BG : g.prioridad==='alta'?'FFF5F5':g.prioridad==='personal'?'F3E8FF':'FFFFFF';
+      rows.push([
+        {v:g.descripcion, s:cs(bg,true)},
+        {v:g.fecha||'', s:cs(bg)},
+        {v:g.monto||0, t:'n', z:'$#,##0.00', s:cs(bg)},
+        {v:g.prioridad||'media', s:cs(bg)},
+        {v:g.pagado?'✓ Pagado':'Pendiente', s:cs(g.pagado?PAID_BG:EXPENSE_BG,true)}
+      ]);
+    });
+    rows.push([
+      {v:'TOTAL', s:cs(EXPENSE_BG,true)},
+      {v:'', s:cs(EXPENSE_BG)},
+      {v:gasTot, t:'n', z:'$#,##0.00', s:cs(EXPENSE_BG,true)},
+      {v:'', s:cs(EXPENSE_BG)},
+      {v:'', s:cs(EXPENSE_BG)}
+    ]);
+
+    // ── Resumen del mes ──
+    const cf = d.ingresos.reduce((s,i)=>{const b=(i.bolsas||[]).find(b=>b.esCashflow||b.tipo==='cashflow');return s+(b?b.monto:0);},0);
+    const profit = cf - gasTot;
+    rows.push(['']);
+    rows.push([{v:'RESUMEN DEL MES', s:cs(SUMMARY_BG,true)},'','','','']);
+    rows.push([{v:'Cashflow disponible',s:cs(SUMMARY_BG)},{v:cf,t:'n',z:'$#,##0.00',s:cs(SUMMARY_BG,true)},'','','']);
+    rows.push([{v:'Total gastos',s:cs(SUMMARY_BG)},{v:gasTot,t:'n',z:'$#,##0.00',s:cs(EXPENSE_BG,true)},'','','']);
+    rows.push([{v:'Profit estimado',s:cs(SUMMARY_BG)},{v:profit,t:'n',z:'$#,##0.00',s:cs(profit>=0?INCOME_BG:EXPENSE_BG,true)},'','','']);
+
+    XLSX.utils.sheet_add_aoa(ws, rows, {origin:'A1'});
+    ws['!cols']=[{wch:22},{wch:12},{wch:14},{wch:14},{wch:14}];
+    ws['!merges']=[
+      {s:{r:0,c:0},e:{r:0,c:4}},
+      {s:{r:2,c:0},e:{r:2,c:4}}
+    ];
+
+    // Sanitize sheet name (max 31 chars, no special chars)
+    const sheetName = mes.nombre.replace(/[\/*?:\[\]]/g,'').substring(0,31);
+    XLSX.utils.book_append_sheet(WB, ws, sheetName);
+  });
+
+  // ── Download ──
+  XLSX.writeFile(WB, `Cashflow_${year}.xlsx`);
+};
+
+
 // ── FORMAT ──
 function fmt(n){return'$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-'),ms=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${parseInt(day)} ${ms[parseInt(m)-1]} ${y}`;}
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 </html>
