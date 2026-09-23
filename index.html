@@ -695,7 +695,7 @@ function renderMes(){
     <div class="mes-tabs">
       <button class="mes-tab-btn active" onclick="switchMesTab('movimientos',this)">Movimientos</button>
       <button class="mes-tab-btn" onclick="switchMesTab('cashflow',this)">Plan de cashflow</button>
-      <button class="mes-tab-btn" onclick="switchMesTab('calendario',this);renderCalTab('${mes.id}')">📅 Calendario</button>
+      <button class="mes-tab-btn" onclick="switchMesTab('calendario',this)">📅 Calendario</button>
     </div>
 
     <!-- TAB: MOVIMIENTOS -->
@@ -2296,6 +2296,10 @@ window.switchMesTab = (tab, btn) => {
   document.querySelectorAll('.mes-tab-content').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('mestab-'+tab)?.classList.add('active');
+  if(tab==='calendario' && activeMesId){
+    // Render after the tab is visible so the container exists
+    requestAnimationFrame(()=>renderCalTab(activeMesId));
+  }
 };
 
 window.renderCalTab = (mesId) => {
@@ -2304,14 +2308,7 @@ window.renderCalTab = (mesId) => {
   if(!mes||!data) return;
   const container = document.getElementById('cal-tab-body');
   if(!container) return;
-  // Reuse the renderCalBody logic but output to the inline tab div
-  // Temporarily point the cal body to our inline div
-  const origEl = document.getElementById('cal-body');
-  const fakeEl = container;
-  // Save original innerHTML function and redirect
-  const origBody = origEl;
-  // We'll call renderCalBodyTo directly
-  renderCalBodyTo(mes, data, fakeEl);
+  renderCalBodyTo(mes, data, container);
 };
 
 // ── FORMAT ──
