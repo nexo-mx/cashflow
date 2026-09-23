@@ -680,8 +680,7 @@ function renderMes(){
     <div class="mes-header">
       <div class="mes-title">${mes.nombre}</div>
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="action-sm" onclick="openCalendario('${mes.id}')" style="border-color:var(--gold);color:var(--gold)">📅 Calendario</button>
-        <button class="action-sm danger" onclick="eliminarMes()">Eliminar mes</button>
+<button class="action-sm danger" onclick="eliminarMes()">Eliminar mes</button>
       </div>
     </div>
     ${alertHTML}
@@ -696,6 +695,7 @@ function renderMes(){
     <div class="mes-tabs">
       <button class="mes-tab-btn active" onclick="switchMesTab('movimientos',this)">Movimientos</button>
       <button class="mes-tab-btn" onclick="switchMesTab('cashflow',this)">Plan de cashflow</button>
+      <button class="mes-tab-btn" onclick="switchMesTab('calendario',this);renderCalTab('${mes.id}')">📅 Calendario</button>
     </div>
 
     <!-- TAB: MOVIMIENTOS -->
@@ -1901,18 +1901,18 @@ window.openCalendario = (mesId) => {
   const mes = meses.find(m=>m.id===mesId);
   const data = mesData[mesId];
   if(!mes||!data) return;
-
   document.getElementById('cal-title').textContent = '📅 ' + mes.nombre;
   document.getElementById('cal-overlay').classList.add('open');
-  renderCalBody(mes, data);
+  renderCalBodyTo(mes, data, document.getElementById('cal-body'));
 };
 
 window.closeCalendario = () => {
   document.getElementById('cal-overlay').classList.remove('open');
 };
 
-function renderCalBody(mes, data){
-  const body = document.getElementById('cal-body');
+function renderCalBody(mes, data){ renderCalBodyTo(mes, data, document.getElementById('cal-body')); }
+
+function renderCalBodyTo(mes, data, body){
   const today = new Date();
   today.setHours(0,0,0,0);
 
@@ -2296,6 +2296,22 @@ window.switchMesTab = (tab, btn) => {
   document.querySelectorAll('.mes-tab-content').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('mestab-'+tab)?.classList.add('active');
+};
+
+window.renderCalTab = (mesId) => {
+  const mes = meses.find(m=>m.id===mesId);
+  const data = mesData[mesId];
+  if(!mes||!data) return;
+  const container = document.getElementById('cal-tab-body');
+  if(!container) return;
+  // Reuse the renderCalBody logic but output to the inline tab div
+  // Temporarily point the cal body to our inline div
+  const origEl = document.getElementById('cal-body');
+  const fakeEl = container;
+  // Save original innerHTML function and redirect
+  const origBody = origEl;
+  // We'll call renderCalBodyTo directly
+  renderCalBodyTo(mes, data, fakeEl);
 };
 
 // ── FORMAT ──
