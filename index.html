@@ -382,6 +382,20 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .ing-desglose-row.profit-row .ing-desglose-concepto{color:var(--amber);font-weight:600}
 .ing-desglose-row.profit-row .ing-desglose-monto{color:var(--amber);font-weight:700}
 
+
+/* CAL DAY POPUP */
+.cal-day-popup{position:fixed;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:0;z-index:700;min-width:220px;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden}
+.cal-day-popup-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+.cal-day-popup-title{font-size:12px;font-weight:600;color:var(--gold)}
+.cal-day-popup-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:0 2px}
+.cal-day-popup-close:hover{color:var(--text)}
+.cal-day-popup-row{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px}
+.cal-day-popup-row:last-child{border-bottom:none}
+.cal-day-popup-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cal-day-popup-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.cal-day-popup-amount{font-weight:600;white-space:nowrap;flex-shrink:0}
+.cal-day-popup-check{font-size:10px;flex-shrink:0}
+
 /* UTILS */
 .divider{border:none;border-top:1px solid var(--border);margin:24px 0}
 .empty{text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--r)}
@@ -1983,28 +1997,34 @@ function renderCalBodyTo(mes, data, body){
     const events = eventMap[d]||[];
     const hasEvents = events.length>0;
 
-    const evHTML = events.slice(0,4).map(ev=>{
-      let cls, dotColor, check='';
+    // Encode events for the click handler
+    const evEncoded = encodeURIComponent(JSON.stringify(events.map(ev=>({
+      tipo:ev.tipo, label:ev.label, monto:ev.monto||0, pagado:ev.pagado, personal:ev.personal
+    }))));
+
+    const evHTML = events.slice(0,3).map(ev=>{
+      let cls, dotColor;
+      if(ev.tipo==='ingreso'){ cls='ingreso'; dotColor='var(--green)'; }
+      else if(ev.personal){ cls='gasto personal'; dotColor='var(--purple)'; }
+      else if(ev.pagado){ cls='gasto-pagado'; dotColor='var(--green)'; }
+      else { cls='gasto'; dotColor='var(--red)'; }
       const mxn = '$'+(ev.monto||0).toLocaleString('es-MX',{maximumFractionDigits:0});
-      if(ev.tipo==='ingreso'){
-        cls='ingreso'; dotColor='var(--green)';
-        check = ev.pagado ? ' ✓' : '';
-      } else if(ev.personal){
-        cls='gasto'; dotColor='var(--purple)'; check = ev.pagado?' ✓':'';
-      } else if(ev.pagado){
-        cls='gasto-pagado'; dotColor='var(--green)'; check=' ✓';
-      } else {
-        cls='gasto'; dotColor='var(--red)'; check='';
-      }
-      const label = ev.label.length>14 ? ev.label.substring(0,13)+'…' : ev.label;
-      return `<div class="cal-event ${cls}" title="${ev.label} · ${ev.tipo==='ingreso'?'+':'−'}${mxn}${ev.pagado?' · ✓ Pagado':''}">
+      const label = ev.label.length>12 ? ev.label.substring(0,11)+'…' : ev.label;
+      return `<div class="cal-event ${cls}">
         <span style="width:5px;height:5px;border-radius:50%;background:${dotColor};flex-shrink:0;display:inline-block"></span>
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${label}${check}</span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${label}</span>
+        <span style="font-size:9px;font-weight:600;flex-shrink:0">${ev.tipo==='ingreso'?'+':'−'}${mxn}</span>
+        ${ev.pagado?'<span style="font-size:9px">✓</span>':''}
       </div>`;
     }).join('');
-    const moreHTML = events.length>4 ? `<div style="font-size:9px;color:var(--text3);padding:1px 4px">+${events.length-4} más</div>` : '';
+    const moreHTML = events.length>3
+      ? `<div style="font-size:10px;color:var(--blue);padding:2px 4px;cursor:pointer;font-weight:500">+${events.length-3} más — ver todos</div>`
+      : '';
 
-    cells += `<div class="cal-cell ${isToday?'today':''} ${hasEvents?'has-events':''}">
+    const clickAttr = hasEvents
+      ? `onclick="openDayPopup(event,'${d}','${MONTH_NAMES[calMonth]} ${d}, ${calYear}',decodeURIComponent('${evEncoded}'))" style="cursor:pointer"`
+      : '';
+    cells += `<div class="cal-cell ${isToday?'today':''} ${hasEvents?'has-events':''}" ${clickAttr}>
       <div class="cal-day-num">
         <span>${d}</span>
         ${isToday?'<span class="today-dot"></span>':''}
@@ -2314,6 +2334,60 @@ window.renderCalTab = (mesId) => {
   const container = document.getElementById('cal-tab-body');
   if(!container) return;
   renderCalBodyTo(mes, data, container);
+};
+
+
+// ── CAL DAY POPUP ──
+window.openDayPopup = (evt, day, dateLabel, eventsJson) => {
+  evt.stopPropagation();
+  closeDayPopup();
+  const events = JSON.parse(eventsJson);
+
+  const rows = events.map(ev=>{
+    let dotColor, amountColor, sign;
+    if(ev.tipo==='ingreso'){ dotColor='var(--green)'; amountColor='var(--green)'; sign='+'; }
+    else if(ev.personal){ dotColor='var(--purple)'; amountColor='var(--purple)'; sign='−'; }
+    else if(ev.pagado){ dotColor='var(--green)'; amountColor='var(--green)'; sign='−'; }
+    else { dotColor='var(--red)'; amountColor='var(--red)'; sign='−'; }
+    const mxn = '$'+(ev.monto||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return `<div class="cal-day-popup-row">
+      <span class="cal-day-popup-dot" style="background:${dotColor}"></span>
+      <span class="cal-day-popup-label">${ev.label}</span>
+      <span class="cal-day-popup-amount" style="color:${amountColor}">${sign}${mxn}</span>
+      ${ev.pagado?'<span class="cal-day-popup-check" style="color:var(--green)">✓</span>':''}
+    </div>`;
+  }).join('');
+
+  const popup = document.createElement('div');
+  popup.className = 'cal-day-popup';
+  popup.id = 'cal-day-popup';
+  popup.innerHTML = `
+    <div class="cal-day-popup-header">
+      <span class="cal-day-popup-title">${dateLabel}</span>
+      <button class="cal-day-popup-close" onclick="closeDayPopup()">✕</button>
+    </div>
+    ${rows}`;
+
+  document.body.appendChild(popup);
+
+  // Position near click
+  const rect = evt.currentTarget.getBoundingClientRect();
+  const popW = 280, popH = popup.offsetHeight || 200;
+  let left = rect.left + rect.width/2 - popW/2;
+  let top = rect.bottom + 6;
+  if(left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
+  if(left < 8) left = 8;
+  if(top + popH > window.innerHeight - 8) top = rect.top - popH - 6;
+  popup.style.left = left+'px';
+  popup.style.top = top+'px';
+
+  // Close on outside click
+  setTimeout(()=>document.addEventListener('click', closeDayPopup, {once:true}), 50);
+};
+
+window.closeDayPopup = () => {
+  const p = document.getElementById('cal-day-popup');
+  if(p) p.remove();
 };
 
 // ── FORMAT ──
