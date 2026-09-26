@@ -927,10 +927,16 @@ function renderCashflowPlan(data){
   for(let exp of gastos){
     // 1. Candidatos con saldo positivo y fecha <= gasto (llegan a tiempo)
     let cands=incW.filter(i=>i.remaining>0&&(i.fecha||'')<=(exp.fecha||''));
-    // 2. Si no hay, tomar cualquier ingreso con saldo positivo (el más próximo)
-    if(!cands.length) cands=[...incW].filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
-    // 3. Si NINGÚN ingreso tiene saldo, asignar al ingreso más próximo aunque quede negativo
-    if(!cands.length) cands=[[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0]].filter(Boolean);
+    // 2. Si no hay a tiempo, tomar el ingreso más próximo DESPUÉS de la fecha del gasto
+    if(!cands.length){
+      const posteriores=incW.filter(i=>i.remaining>0&&(i.fecha||'')>(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+      cands=posteriores.length?posteriores:[...incW].filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    }
+    // 3. Si NINGÚN ingreso tiene saldo, asignar al más próximo posterior (aunque quede negativo)
+    if(!cands.length){
+      const posteriores=[...incW].filter(i=>(i.fecha||'')>=(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+      cands=posteriores.length?[posteriores[0]]:[[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0]].filter(Boolean);
+    }
     else cands.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
 
     // Preferir uno que cubra completo
@@ -950,8 +956,9 @@ function renderCashflowPlan(data){
         }
       }
       if(rem>0){
-        // Asignar el faltante al ingreso más próximo, marcado como déficit
-        const closest=[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0];
+        // Asignar el faltante al ingreso más próximo POSTERIOR a la fecha del gasto
+        const posteriores=[...incW].filter(i=>(i.fecha||'')>=(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+        const closest=posteriores[0]||[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0];
         if(closest){
           closest.remaining-=rem;
           closest.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:rem,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:true});
