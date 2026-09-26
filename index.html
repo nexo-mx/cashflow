@@ -806,7 +806,10 @@ function renderMes(){
 
     <!-- TAB: CASHFLOW -->
     <div class="mes-tab-content" id="mestab-cashflow">
-      ${renderCashflowPlan(data)}
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button onclick="recalcularCashflow()" style="background:var(--blue-dim);border:1px solid var(--blue-border);color:var(--blue);padding:7px 16px;border-radius:var(--rs);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">↺ Recalcular plan</button>
+      </div>
+      <div id="cashflow-plan-content">${renderCashflowPlan(data)}</div>
     </div>
 
     <!-- TAB: CALENDARIO -->
@@ -2697,6 +2700,14 @@ window.eliminarClienteCatalog = async (nombre) => {
   openGestorClientes();
 };
 
+
+
+window.recalcularCashflow = () => {
+  const data = mesData[activeMesId];
+  if(!data) return;
+  const el = document.getElementById('cashflow-plan-content');
+  if(el) el.innerHTML = renderCashflowPlan(data);
+};
 
 // ── FORMAT ──
 function fmt(n){return'$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
