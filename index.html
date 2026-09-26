@@ -912,7 +912,6 @@ function renderGastoRow(g, cubiertoPor){
 
 // ── CASHFLOW PLAN ──
 function renderCashflowPlan(data){
-  // Incluye TODOS los ingresos con CF (cobrados y no cobrados)
   const cfIngresos=data.ingresos.filter(i=>cfDeIngreso(i)>0);
   if(!cfIngresos.length) return '<div class="no-cf">Define bolsas de cashflow en tus ingresos para ver el plan.</div>';
 
@@ -922,61 +921,94 @@ function renderCashflowPlan(data){
     return (p[a.prioridad]||1)-(p[b.prioridad]||1);
   });
 
+  // incW puede tener remaining negativo (deuda contra ese ingreso)
   let incW=cfIngresos.map(i=>({...i,cfAmount:cfDeIngreso(i),remaining:cfDeIngreso(i),allocations:[]}));
-  let expW=gastos.map(e=>({...e,covered:false,uncovered:0}));
 
-  for(let exp of expW){
-    // Primero candidatos con fecha anterior o igual (cobrados o no)
+  for(let exp of gastos){
+    // 1. Candidatos con saldo positivo y fecha <= gasto (llegan a tiempo)
     let cands=incW.filter(i=>i.remaining>0&&(i.fecha||'')<=(exp.fecha||''));
-    if(!cands.length) cands=incW.filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    // 2. Si no hay, tomar cualquier ingreso con saldo positivo (el más próximo)
+    if(!cands.length) cands=[...incW].filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    // 3. Si NINGÚN ingreso tiene saldo, asignar al ingreso más próximo aunque quede negativo
+    if(!cands.length) cands=[[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0]].filter(Boolean);
     else cands.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-    // Preferir uno solo que cubra completo
+
+    // Preferir uno que cubra completo
     const single=cands.find(i=>i.remaining>=exp.monto);
     if(single){
       single.remaining-=exp.monto;
-      single.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:exp.monto,prioridad:exp.prioridad,gastoPagado:exp.pagado});
-      exp.covered=true;
+      single.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:exp.monto,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:false});
     } else {
+      // Dividir entre los que tienen saldo, y si aún falta asignar el resto al más próximo (deficit)
       let rem=exp.monto;
-      for(let inc of cands){if(rem<=0)break;const take=Math.min(inc.remaining,rem);inc.remaining-=take;rem-=take;inc.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:take,prioridad:exp.prioridad,gastoPagado:exp.pagado});}
-      if(rem<=0)exp.covered=true;else exp.uncovered=rem;
+      for(let inc of cands){
+        if(rem<=0) break;
+        if(inc.remaining>0){
+          const take=Math.min(inc.remaining,rem);
+          inc.remaining-=take; rem-=take;
+          inc.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:take,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:false});
+        }
+      }
+      if(rem>0){
+        // Asignar el faltante al ingreso más próximo, marcado como déficit
+        const closest=[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0];
+        if(closest){
+          closest.remaining-=rem;
+          closest.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:rem,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:true});
+        }
+      }
     }
   }
 
   const totalSobrante=incW.reduce((s,i)=>s+i.remaining,0);
-  const uncovered=expW.filter(e=>!e.covered);
 
   let html=incW.map(inc=>{
     const reserved=inc.cfAmount-inc.remaining;
     const isPending=!inc.pagado;
-    const badge=isPending
-      ? `<span class="cf-badge badge-pending">Pendiente de cobro</span>`
-      : inc.remaining>0?`<span class="cf-badge badge-ok">Sobra ${fmt(inc.remaining)}</span>`:`<span class="cf-badge badge-warn">Sin sobrante</span>`;
-    let h=`<div class="cf-card" style="${isPending?'opacity:.85':''}">
-      <div class="cf-header">
+    const hasDeficit=inc.remaining<0;
+    let badge;
+    if(isPending) badge=`<span class="cf-badge badge-pending">Pendiente de cobro</span>`;
+    else if(hasDeficit) badge=`<span class="cf-badge" style="background:var(--red-dim);color:var(--red);border-color:var(--red-border)">⚠ Déficit ${fmt(Math.abs(inc.remaining))}</span>`;
+    else if(inc.remaining>0) badge=`<span class="cf-badge badge-ok">Sobra ${fmt(inc.remaining)}</span>`;
+    else badge=`<span class="cf-badge badge-warn">Sin sobrante</span>`;
+
+    let h=`<div class="cf-card" style="${isPending?'opacity:.85':''}${hasDeficit?';border-color:var(--red-border)':''}">
+      <div class="cf-header" style="${hasDeficit?'background:var(--red-dim);border-bottom-color:var(--red-border)':''}">
         <div>
-          <div class="cf-name">💰 ${inc.cliente}${isPending?' <span style="font-size:11px;color:var(--blue)">· No cobrado aún</span>':''}</div>
+          <div class="cf-name" style="${hasDeficit?'color:var(--red)':''}">💰 ${inc.cliente}${isPending?' <span style="font-size:11px;color:var(--blue)">· No cobrado aún</span>':''}</div>
           <div class="cf-header-meta">CF: ${fmt(inc.cfAmount)} · ${isPending?'Esperado':'Cobrado'} el ${fmtDate(inc.fecha)}</div>
         </div>
         ${badge}
       </div>`;
-    if(!inc.allocations.length) h+=`<div class="cf-alloc"><span style="color:var(--text3)">Sin gastos asignados.</span></div>`;
-    else inc.allocations.forEach(a=>{
-      const pc=a.prioridad==='alta'?'var(--red)':a.prioridad==='media'?'var(--amber)':'var(--text3)';
-      h+=`<div class="cf-alloc ${a.gastoPagado?'':''}">
-        <div>
-          <div class="cf-alloc-name">${a.gastoPagado?'✓ ':''}${a.desc}${a.gastoPagado?' <span style="font-size:10px;color:var(--green)">pagado</span>':''}</div>
-          <div class="cf-alloc-date">Fecha: ${fmtDate(a.fecha)} · <span style="color:${pc}">${a.prioridad||'media'}</span></div>
-        </div>
-        <div class="cf-alloc-amt" style="${a.gastoPagado?'color:var(--green)':''}">−${fmt(a.amount)}</div>
-      </div>`;
-    });
-    if(reserved>0) h+=`<div class="cf-reserved"><span>Reservado para gastos</span><span>${fmt(reserved)}</span></div>`;
+
+    if(!inc.allocations.length){
+      h+=`<div class="cf-alloc"><span style="color:var(--text3)">Sin gastos asignados.</span></div>`;
+    } else {
+      inc.allocations.forEach(a=>{
+        const pc=a.prioridad==='alta'?'var(--red)':a.prioridad==='media'?'var(--amber)':'var(--text3)';
+        const rowBg=a.deficit?'background:var(--red-dim);':'';
+        h+=`<div class="cf-alloc" style="${rowBg}">
+          <div>
+            <div class="cf-alloc-name">
+              ${a.gastoPagado?'✓ ':''}${a.desc}
+              ${a.deficit?'<span style="font-size:10px;color:var(--red);font-weight:600;margin-left:4px">⚠ Sin fondos suficientes</span>':''}
+              ${a.gastoPagado&&!a.deficit?' <span style="font-size:10px;color:var(--green)">pagado</span>':''}
+            </div>
+            <div class="cf-alloc-date">Fecha: ${fmtDate(a.fecha)} · <span style="color:${pc}">${a.prioridad||'media'}</span></div>
+          </div>
+          <div class="cf-alloc-amt" style="color:${a.deficit?'var(--red)':a.gastoPagado?'var(--green)':'var(--red)'}">
+            −${fmt(a.amount)}${a.deficit?` <span style="font-size:10px">(falta)</span>`:''}
+          </div>
+        </div>`;
+      });
+    }
+
+    if(reserved>0&&!hasDeficit) h+=`<div class="cf-reserved"><span>Reservado para gastos</span><span>${fmt(reserved)}</span></div>`;
     if(inc.remaining>0) h+=`<div class="cf-leftover"><span>✦ Sobrante libre</span><span>${fmt(inc.remaining)}</span></div>`;
+    if(hasDeficit) h+=`<div style="padding:10px 16px;background:var(--red-dim);border-top:1px solid var(--red-border);display:flex;justify-content:space-between;font-size:12px;color:var(--red);font-weight:600"><span>⚠ Déficit total</span><span>${fmt(Math.abs(inc.remaining))}</span></div>`;
     h+=`</div>`; return h;
   }).join('');
 
-  if(uncovered.length) html+=`<div style="background:var(--red-dim);border:1px solid var(--red-border);border-radius:var(--rs);padding:12px 16px;font-size:13px;color:var(--red);margin-top:12px">❌ Sin cobertura: ${uncovered.map(e=>`${e.descripcion} (faltan ${fmt(e.uncovered||e.monto)})`).join(', ')}</div>`;
   if(totalSobrante>0) html+=`<div class="cf-summary-box">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
     <div class="cf-summary-title" style="margin-bottom:0">✦ El Profit por ingreso</div>
