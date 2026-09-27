@@ -277,51 +277,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .aport-del:hover{color:var(--red)}
 
 
-/* VIAJES */
-.viajes-content{padding:28px;overflow-y:auto}
-.viajes-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.viaje-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;transition:border-color .2s}
-.viaje-card:hover{border-color:var(--border2)}
-.viaje-card-header{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer}
-.viaje-icon{font-size:24px;flex-shrink:0}
-.viaje-info{flex:1;min-width:0}
-.viaje-nombre{font-size:15px;font-weight:600}
-.viaje-meta{font-size:12px;color:var(--text3);margin-top:2px}
-.viaje-totals{text-align:right;flex-shrink:0}
-.viaje-total-mxn{font-size:16px;font-weight:600;color:var(--text)}
-.viaje-total-usd{font-size:12px;color:var(--text3);margin-top:1px}
-.viaje-chevron{color:var(--text3);font-size:11px;transition:transform .2s;margin-left:8px;flex-shrink:0}
-.viaje-card.open .viaje-chevron{transform:rotate(180deg)}
-.viaje-body{border-top:1px solid var(--border);padding:16px 18px;display:none}
-
-/* gasto viaje row */
-.vgasto-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;background:var(--surface2);font-size:13px}
-.vgasto-info{flex:1;min-width:0}
-.vgasto-obj{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vgasto-meta{font-size:11px;color:var(--text3);margin-top:2px}
-.vgasto-amounts{text-align:right;flex-shrink:0}
-.vgasto-mxn{font-weight:600;color:var(--red)}
-.vgasto-usd{font-size:11px;color:var(--text3)}
-.mp-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border);white-space:nowrap}
-
-/* viaje stats */
-.viaje-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-@media(max-width:500px){.viaje-stats{grid-template-columns:1fr 1fr}}
-
-/* metodos de pago config */
-.mp-config{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 16px;margin-bottom:20px}
-.mp-config-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:10px}
-.mp-chips{display:flex;flex-wrap:wrap;gap:6px}
-.mp-chip{display:flex;align-items:center;gap:6px;background:var(--surface3);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:12px}
-.mp-chip-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:0;transition:color .15s}
-.mp-chip-del:hover{color:var(--red)}
-.mp-add-row{display:flex;gap:8px;margin-top:8px}
-.mp-add-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 12px;outline:none}
-.mp-add-input:focus{border-color:var(--gold)}
-.mp-add-btn{background:var(--surface3);border:1px solid var(--border2);color:var(--text2);padding:7px 14px;border-radius:var(--rs);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
-.mp-add-btn:hover{border-color:var(--gold);color:var(--gold)}
-
-
 /* PROFIT DISTRIBUTOR */
 .dist-row{display:grid;grid-template-columns:1fr 140px auto;gap:8px;align-items:center;margin-bottom:8px}
 .dist-row input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%}
@@ -439,6 +394,56 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .merge-bar{background:var(--amber-dim);border:1px solid var(--amber-border);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:none;align-items:center;gap:10px;font-size:13px}
 .merge-bar.visible{display:flex}
 
+
+/* CALCULADORA DE GASTOS */
+.calc-content{padding:28px;overflow-y:auto}
+.calc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.calc-title{font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.3px}
+.calc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:4px}
+
+/* TARJETA */
+.calc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.calc-card:hover{border-color:var(--border2)}
+.calc-card-header{padding:16px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.calc-card-left{flex:1;min-width:0}
+.calc-card-nombre{font-size:15px;font-weight:600;margin-bottom:2px}
+.calc-card-deuda{font-size:22px;font-weight:700;color:var(--red);margin-top:4px;letter-spacing:-.5px}
+.calc-card-resuelto{font-size:12px;color:var(--text3);margin-top:2px}
+.calc-card-chevron{color:var(--text3);font-size:11px;transition:transform .2s;flex-shrink:0}
+.calc-card.open .calc-card-chevron{transform:rotate(180deg)}
+
+/* PROG BAR */
+.calc-prog-wrap{height:5px;background:var(--surface3);overflow:hidden}
+.calc-prog-bar{height:100%;background:var(--green);transition:width .4s}
+
+/* BODY */
+.calc-card-body{display:none;border-top:1px solid var(--border);padding:16px 18px}
+.calc-card.open .calc-card-body{display:block}
+
+/* SIN RESOLVER box */
+.calc-sin-resolver{background:var(--red-dim);border:1px solid var(--red-border);border-radius:var(--rs);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:14px}
+.calc-sin-resolver-label{color:var(--red);font-weight:500}
+.calc-sin-resolver-monto{font-size:20px;font-weight:700;color:var(--red)}
+
+/* PARTIDAS */
+.calc-partida{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.calc-partida:last-child{border-bottom:none}
+.calc-partida-desc{flex:1;color:var(--text2)}
+.calc-partida-monto{font-weight:600;color:var(--text);white-space:nowrap}
+.calc-partida-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:color .15s}
+.calc-partida-del:hover{color:var(--red)}
+
+/* ADD PARTIDA */
+.calc-add-row{display:grid;grid-template-columns:1fr 110px auto;gap:8px;margin-top:12px;align-items:center}
+.calc-add-row input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%}
+.calc-add-row input:focus{border-color:var(--gold)}
+.calc-add-btn{background:var(--gold);border:none;color:#0c0c0e;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:8px 14px;border-radius:var(--rs);cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.calc-add-btn:hover{opacity:.88}
+
+/* RESUMEN GLOBAL */
+.calc-resumen{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:500px){.calc-resumen{grid-template-columns:1fr}}
+
 /* UTILS */
 .divider{border:none;border-top:1px solid var(--border);margin:24px 0}
 .empty{text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--r)}
@@ -487,7 +492,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <button class="nav-tab" onclick="showPage('anual',this)">Año</button>
         <button class="nav-tab" onclick="showPage('deudas',this)">Deudas</button>
         <button class="nav-tab" onclick="showPage('ahorros',this)">Ahorros</button>
-        <button class="nav-tab" onclick="showPage('viajes',this)">Viajes</button>
+        <button class="nav-tab" onclick="showPage('calculadora',this)">Calculadora</button>
       </div>
     </div>
     <div class="user-area">
@@ -518,8 +523,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     <div class="page" id="page-ahorros">
       <div class="ahorros-content" id="ahorros-content"><div class="spinner"></div></div>
     </div>
-    <div class="page" id="page-viajes">
-      <div class="viajes-content" id="viajes-content"><div class="spinner"></div></div>
+    <div class="page" id="page-calculadora">
+      <div class="calc-content" id="calc-content"><div class="spinner"></div></div>
     </div>
   </div>
 </div>
@@ -604,7 +609,7 @@ window.showPage=(page,btn)=>{
   if(page==='anual') renderAnual();
   if(page==='deudas') renderDeudas();
   if(page==='ahorros') renderAhorros();
-  if(page==='viajes') renderViajes();
+  if(page==='calculadora') renderCalculadora();
 };
 
 // ── MESES ──
@@ -1589,6 +1594,163 @@ window.eliminarDeuda = async (id) => {
   await deleteDoc(doc(db,'users',uid,'deudas',id));
   deudas = deudas.filter(x=>x.id!==id);
   renderDeudas();
+};
+
+
+
+// ── CALCULADORA DE GASTOS ──
+let calcTarjetas = [];
+
+async function loadCalcTarjetas(){
+  const snap = await getDocs(collection(db,'users',uid,'calcTarjetas'));
+  calcTarjetas = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.creadoEn||0)-(b.creadoEn||0));
+}
+
+async function renderCalculadora(){
+  const cont = document.getElementById('calc-content');
+  cont.innerHTML = '<div class="spinner"></div>';
+  if(!calcTarjetas.length) await loadCalcTarjetas();
+
+  const totalDeuda    = calcTarjetas.reduce((s,t)=>s+(t.deuda||0),0);
+  const totalResuelto = calcTarjetas.reduce((s,t)=>(t.partidas||[]).reduce((ss,p)=>ss+(p.monto||0),s),0);
+  const totalSin      = Math.max(0, totalDeuda - totalResuelto);
+
+  const cards = calcTarjetas.map(t=>{
+    const resuelto = (t.partidas||[]).reduce((s,p)=>s+(p.monto||0),0);
+    const sinResolver = Math.max(0,(t.deuda||0)-resuelto);
+    const pct = t.deuda>0 ? Math.min(100,Math.round(resuelto/t.deuda*100)) : 0;
+
+    const partidas = (t.partidas||[]).map((p,i)=>`
+      <div class="calc-partida">
+        <span class="calc-partida-desc">${p.desc}</span>
+        <span class="calc-partida-monto">$${(p.monto||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+        <button class="calc-partida-del" onclick="eliminarPartida('${t.id}',${i})">✕</button>
+      </div>`).join('');
+
+    return `<div class="calc-card" id="cc-${t.id}">
+      <div class="calc-card-header" onclick="toggleCalcCard('${t.id}')">
+        <div class="calc-card-left">
+          <div class="calc-card-nombre">${t.nombre}</div>
+          <div class="calc-card-deuda">$${(t.deuda||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+          <div class="calc-card-resuelto">Resuelto: $${resuelto.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})} · ${pct}%</div>
+        </div>
+        <span class="calc-card-chevron">▼</span>
+      </div>
+      <div class="calc-prog-wrap">
+        <div class="calc-prog-bar" style="width:${pct}%"></div>
+      </div>
+      <div class="calc-card-body">
+        <div class="calc-sin-resolver">
+          <span class="calc-sin-resolver-label">Sin resolver</span>
+          <span class="calc-sin-resolver-monto">$${sinResolver.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+        </div>
+        ${partidas.length ? `<div style="margin-bottom:4px">${partidas}</div>` : '<div style="font-size:12px;color:var(--text3);margin-bottom:12px">Sin partidas aún.</div>'}
+        <div class="calc-add-row">
+          <input id="cp-desc-${t.id}" placeholder="Concepto (ej: Medicamentos)">
+          <input id="cp-monto-${t.id}" type="number" placeholder="Monto" onkeydown="if(event.key==='Enter')agregarPartida('${t.id}')">
+          <button class="calc-add-btn" onclick="agregarPartida('${t.id}')">+ Agregar</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <button class="action-sm" onclick="editarDeudaTarjeta('${t.id}')">✎ Editar deuda</button>
+          <button class="action-sm danger" onclick="eliminarCalcTarjeta('${t.id}')">✕ Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML = `
+    <div class="calc-header">
+      <div class="calc-title">Calculadora de gastos</div>
+      <button class="add-btn" onclick="openNuevaCalcTarjeta()">+ Nueva tarjeta</button>
+    </div>
+
+    ${calcTarjetas.length ? `<div class="calc-resumen">
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Deuda total</div><div class="stat-value" style="color:var(--red);font-size:20px">$${totalDeuda.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></div>
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Total resuelto</div><div class="stat-value" style="color:var(--green);font-size:20px">$${totalResuelto.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></div>
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Sin resolver</div><div class="stat-value" style="color:var(--amber);font-size:20px">$${totalSin.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></div>
+    </div>` : ''}
+
+    ${calcTarjetas.length
+      ? `<div class="calc-grid">${cards}</div>`
+      : '<div class="empty" style="margin-top:40px">Sin tarjetas. Crea la primera para empezar.</div>'}
+  `;
+}
+
+window.toggleCalcCard = (id) => {
+  const card = document.getElementById('cc-'+id);
+  card?.classList.toggle('open');
+};
+
+window.openNuevaCalcTarjeta = () => {
+  showModal(`<div class="modal-title">Nueva tarjeta / cuenta</div>
+    <div class="f-row"><label>Nombre</label><input id="ct-nombre" class="modal-input" placeholder="Ej: NU, Amex, Mercado Pago..."></div>
+    <div class="f-row"><label>Deuda total del mes</label><input id="ct-deuda" class="modal-input" type="number" placeholder="0.00"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="guardarCalcTarjeta()">Crear</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+};
+
+window.guardarCalcTarjeta = async () => {
+  const nombre = document.getElementById('ct-nombre').value.trim();
+  const deuda  = parseFloat(document.getElementById('ct-deuda').value)||0;
+  if(!nombre) return alert('Ponle un nombre.');
+  const id = Date.now().toString();
+  const obj = {nombre, deuda, partidas:[], creadoEn:Date.now()};
+  await setDoc(doc(db,'users',uid,'calcTarjetas',id), obj);
+  calcTarjetas.push({id,...obj});
+  closeModal();
+  renderCalculadora();
+};
+
+window.editarDeudaTarjeta = (id) => {
+  const t = calcTarjetas.find(x=>x.id===id);
+  if(!t) return;
+  showModal(`<div class="modal-title">Editar deuda — ${t.nombre}</div>
+    <div class="f-row"><label>Deuda total del mes</label><input id="et-deuda" class="modal-input" type="number" value="${t.deuda||0}"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="actualizarDeuda('${id}')">Guardar</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+};
+
+window.actualizarDeuda = async (id) => {
+  const t = calcTarjetas.find(x=>x.id===id);
+  if(!t) return;
+  t.deuda = parseFloat(document.getElementById('et-deuda').value)||0;
+  await updateDoc(doc(db,'users',uid,'calcTarjetas',id),{deuda:t.deuda});
+  closeModal();
+  renderCalculadora();
+};
+
+window.agregarPartida = async (id) => {
+  const t = calcTarjetas.find(x=>x.id===id);
+  if(!t) return;
+  const desc  = document.getElementById('cp-desc-'+id)?.value.trim();
+  const monto = parseFloat(document.getElementById('cp-monto-'+id)?.value)||0;
+  if(!desc||!monto) return alert('Escribe concepto y monto.');
+  if(!t.partidas) t.partidas=[];
+  t.partidas.push({desc,monto});
+  await updateDoc(doc(db,'users',uid,'calcTarjetas',id),{partidas:t.partidas});
+  renderCalculadora();
+  // Re-open card after re-render
+  setTimeout(()=>{ const cc=document.getElementById('cc-'+id); if(cc&&!cc.classList.contains('open')) cc.classList.add('open'); },50);
+};
+
+window.eliminarPartida = async (id, idx) => {
+  const t = calcTarjetas.find(x=>x.id===id);
+  if(!t) return;
+  t.partidas.splice(idx,1);
+  await updateDoc(doc(db,'users',uid,'calcTarjetas',id),{partidas:t.partidas});
+  renderCalculadora();
+  setTimeout(()=>{ const cc=document.getElementById('cc-'+id); if(cc&&!cc.classList.contains('open')) cc.classList.add('open'); },50);
+};
+
+window.eliminarCalcTarjeta = async (id) => {
+  if(!confirm('¿Eliminar esta tarjeta y sus partidas?')) return;
+  await deleteDoc(doc(db,'users',uid,'calcTarjetas',id));
+  calcTarjetas = calcTarjetas.filter(x=>x.id!==id);
+  renderCalculadora();
 };
 
 
