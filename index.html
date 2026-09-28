@@ -491,6 +491,21 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 /* RESUMEN PRONOSTICADOR */
 .pron-resumen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
 
+
+/* SIMULADOR CLIENTES */
+.sim-table{width:100%;border-collapse:collapse;font-size:13px}
+.sim-table th{padding:9px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-bottom:2px solid var(--border);background:var(--surface2)}
+.sim-table th:not(:first-child){text-align:right}
+.sim-table td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.sim-table td:not(:first-child){text-align:right}
+.sim-table tr:hover td{background:var(--surface2)}
+.sim-table tr.inactive td{opacity:.4}
+.sim-total-row td{padding:11px 14px;background:var(--surface2);font-weight:700;border-top:2px solid var(--border)}
+.sim-check{width:16px;height:16px;accent-color:var(--green);cursor:pointer}
+.sim-add-row{display:grid;grid-template-columns:1fr 140px auto;gap:8px;padding:12px 14px;border-top:1px solid var(--border);background:var(--surface2)}
+.sim-add-row input{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;width:100%}
+.sim-add-row input:focus{border-color:var(--gold)}
+
 /* UTILS */
 .divider{border:none;border-top:1px solid var(--border);margin:24px 0}
 .empty{text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--r)}
@@ -1658,6 +1673,7 @@ async function renderCalculadora(){
   cont.innerHTML = '<div class="spinner"></div>';
   if(!calcTarjetas.length) await loadCalcTarjetas();
   if(!pronMeses.length) await loadPronMeses();
+  if(!simClientes.length) await loadSimClientes();
 
   const totalDeuda    = calcTarjetas.reduce((s,t)=>s+(t.deuda||0),0);
   const totalResuelto = calcTarjetas.reduce((s,t)=>(t.partidas||[]).reduce((ss,p)=>ss+(p.monto||0),s),0);
@@ -1725,6 +1741,7 @@ async function renderCalculadora(){
     <div class="pron-tabs">
       <button class="pron-tab-btn active" onclick="switchPronTab('meses',this)">📅 Meses pronosticados</button>
       <button class="pron-tab-btn" onclick="switchPronTab('resumen',this)">📊 Resumen</button>
+      <button class="pron-tab-btn" onclick="switchPronTab('simclientes',this)">👥 Simulador de clientes</button>
     </div>
 
     <div class="pron-section active" id="prontab-meses">
@@ -1737,6 +1754,10 @@ async function renderCalculadora(){
 
     <div class="pron-section" id="prontab-resumen">
       <div id="pron-resumen-content">${renderPronResumen()}</div>
+    </div>
+
+    <div class="pron-section" id="prontab-simclientes">
+      <div id="sim-clientes-content">${renderSimClientes()}</div>
     </div>
   `;
 }
@@ -2990,6 +3011,7 @@ window.switchPronTab = (tab, btn) => {
   btn.classList.add('active');
   document.getElementById('prontab-'+tab)?.classList.add('active');
   if(tab==='resumen') document.getElementById('pron-resumen-content').innerHTML = renderPronResumen();
+  if(tab==='simclientes') document.getElementById('sim-clientes-content').innerHTML = renderSimClientes();
 };
 
 function renderPronMeses(){
@@ -3281,6 +3303,92 @@ window.eliminarPronMes = async (id) => {
   await deleteDoc(doc(db,'users',uid,'pronMeses',id));
   pronMeses = pronMeses.filter(x=>x.id!==id);
   document.getElementById('pron-meses-list').innerHTML = renderPronMeses();
+};
+
+
+
+// ── SIMULADOR DE CLIENTES ──
+let simClientes = [];
+
+async function loadSimClientes(){
+  const snap = await getDocs(collection(db,'users',uid,'simClientes'));
+  simClientes = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.orden||0)-(b.orden||0));
+}
+
+function renderSimClientes(){
+  if(!simClientes.length){
+    return `<div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+      <div class="empty" style="border:none">Sin clientes simulados. Agrega el primero abajo.</div>
+      ${simAddRow()}
+    </div>`;
+  }
+
+  const total = simClientes.filter(c=>c.activo!==false).reduce((s,c)=>s+(c.monto||0),0);
+  const rows = simClientes.map((cl,i)=>`
+    <tr class="${cl.activo===false?'inactive':''}">
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" class="sim-check" ${cl.activo!==false?'checked':''} onchange="toggleSimCliente('${cl.id}',this.checked)">
+          <span style="font-weight:500">${cl.nombre}</span>
+        </div>
+      </td>
+      <td style="color:${cl.activo!==false?'var(--green)':'var(--text3)'};font-weight:600">${fmt(cl.monto||0)}</td>
+      <td>
+        <button class="pron-item-del" onclick="eliminarSimCliente('${cl.id}')">✕</button>
+      </td>
+    </tr>`).join('');
+
+  return `<div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <table class="sim-table">
+      <thead><tr>
+        <th>Cliente</th>
+        <th>Monto cobro</th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="sim-total-row">
+          <td style="color:var(--text3)">Total activos</td>
+          <td style="color:var(--green);font-size:16px">${fmt(total)}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    ${simAddRow()}
+  </div>`;
+}
+
+function simAddRow(){
+  return `<div class="sim-add-row">
+    <input id="sc-nombre" placeholder="Nombre del cliente" onkeydown="if(event.key==='Enter')agregarSimCliente()">
+    <input id="sc-monto" type="number" placeholder="Monto" onkeydown="if(event.key==='Enter')agregarSimCliente()">
+    <button class="calc-add-btn" onclick="agregarSimCliente()">+ Agregar</button>
+  </div>`;
+}
+
+window.agregarSimCliente = async () => {
+  const nombre = document.getElementById('sc-nombre')?.value.trim();
+  const monto  = parseFloat(document.getElementById('sc-monto')?.value)||0;
+  if(!nombre||!monto) return alert('Escribe nombre y monto.');
+  const id = Date.now().toString();
+  const obj = {nombre, monto, activo:true, orden:Date.now()};
+  await setDoc(doc(db,'users',uid,'simClientes',id), obj);
+  simClientes.push({id,...obj});
+  document.getElementById('sim-clientes-content').innerHTML = renderSimClientes();
+};
+
+window.toggleSimCliente = async (id, activo) => {
+  const cl = simClientes.find(x=>x.id===id);
+  if(!cl) return;
+  cl.activo = activo;
+  await updateDoc(doc(db,'users',uid,'simClientes',id),{activo});
+  document.getElementById('sim-clientes-content').innerHTML = renderSimClientes();
+};
+
+window.eliminarSimCliente = async (id) => {
+  await deleteDoc(doc(db,'users',uid,'simClientes',id));
+  simClientes = simClientes.filter(x=>x.id!==id);
+  document.getElementById('sim-clientes-content').innerHTML = renderSimClientes();
 };
 
 
