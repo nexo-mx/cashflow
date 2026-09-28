@@ -444,6 +444,53 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .calc-resumen{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 @media(max-width:500px){.calc-resumen{grid-template-columns:1fr}}
 
+
+/* PRONOSTICADOR */
+.pron-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px;margin-top:28px}
+.pron-tab-btn{padding:8px 16px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.pron-tab-btn:hover{color:var(--text2)}
+.pron-tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.pron-section{display:none}
+.pron-section.active{display:block}
+
+.pron-mes-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.pron-mes-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer}
+.pron-mes-nombre{font-size:15px;font-weight:600}
+.pron-mes-balance{font-size:14px;font-weight:600}
+.pron-mes-chevron{color:var(--text3);font-size:11px;transition:transform .2s;flex-shrink:0}
+.pron-mes-card.open .pron-mes-chevron{transform:rotate(180deg)}
+.pron-mes-body{display:none;border-top:1px solid var(--border);padding:16px 18px}
+.pron-mes-card.open .pron-mes-body{display:block}
+
+.pron-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:500px){.pron-stats{grid-template-columns:1fr}}
+
+.pron-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:8px}
+
+.pron-item-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.pron-item-row:last-child{border-bottom:none}
+.pron-item-desc{flex:1;color:var(--text2)}
+.pron-item-monto{font-weight:600;white-space:nowrap}
+.pron-item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;transition:color .15s}
+.pron-item-del:hover{color:var(--red)}
+
+.pron-add-row{display:grid;grid-template-columns:1fr 110px auto;gap:8px;margin-top:10px;align-items:center}
+.pron-add-row input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;width:100%}
+.pron-add-row input:focus{border-color:var(--gold)}
+
+.pron-profit-box{background:var(--amber-dim);border:1px solid var(--amber-border);border-radius:var(--rs);padding:14px 16px;margin-top:14px}
+.pron-profit-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pron-profit-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--amber)}
+.pron-profit-total{font-size:18px;font-weight:700;color:var(--amber)}
+.pron-profit-restante{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--amber-border);margin-top:8px;font-size:13px;font-weight:600;color:var(--amber)}
+.pron-asig-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(245,166,35,.2)}
+.pron-asig-row:last-of-type{border-bottom:none}
+.pron-asig-label{color:var(--text2)}
+.pron-asig-monto{font-weight:500;color:var(--amber)}
+
+/* RESUMEN PRONOSTICADOR */
+.pron-resumen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+
 /* UTILS */
 .divider{border:none;border-top:1px solid var(--border);margin:24px 0}
 .empty{text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--r)}
@@ -1610,6 +1657,7 @@ async function renderCalculadora(){
   const cont = document.getElementById('calc-content');
   cont.innerHTML = '<div class="spinner"></div>';
   if(!calcTarjetas.length) await loadCalcTarjetas();
+  if(!pronMeses.length) await loadPronMeses();
 
   const totalDeuda    = calcTarjetas.reduce((s,t)=>s+(t.deuda||0),0);
   const totalResuelto = calcTarjetas.reduce((s,t)=>(t.partidas||[]).reduce((ss,p)=>ss+(p.monto||0),s),0);
@@ -1673,6 +1721,23 @@ async function renderCalculadora(){
     ${calcTarjetas.length
       ? `<div class="calc-grid">${cards}</div>`
       : '<div class="empty" style="margin-top:40px">Sin tarjetas. Crea la primera para empezar.</div>'}
+
+    <div class="pron-tabs">
+      <button class="pron-tab-btn active" onclick="switchPronTab('meses',this)">📅 Meses pronosticados</button>
+      <button class="pron-tab-btn" onclick="switchPronTab('resumen',this)">📊 Resumen</button>
+    </div>
+
+    <div class="pron-section active" id="prontab-meses">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--text3)">Simula tus próximos meses</div>
+        <button class="add-btn" onclick="openNuevoPronMes()">+ Agregar mes</button>
+      </div>
+      <div id="pron-meses-list">${renderPronMeses()}</div>
+    </div>
+
+    <div class="pron-section" id="prontab-resumen">
+      <div id="pron-resumen-content">${renderPronResumen()}</div>
+    </div>
   `;
 }
 
@@ -2909,6 +2974,270 @@ window.recalcularCashflow = () => {
   const el = document.getElementById('cashflow-plan-content');
   if(el) el.innerHTML = renderCashflowPlan(data);
 };
+
+
+// ── PRONOSTICADOR ──
+let pronMeses = [];
+
+async function loadPronMeses(){
+  const snap = await getDocs(collection(db,'users',uid,'pronMeses'));
+  pronMeses = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.orden||0)-(b.orden||0));
+}
+
+window.switchPronTab = (tab, btn) => {
+  document.querySelectorAll('.pron-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.pron-section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('prontab-'+tab)?.classList.add('active');
+  if(tab==='resumen') document.getElementById('pron-resumen-content').innerHTML = renderPronResumen();
+};
+
+function renderPronMeses(){
+  if(!pronMeses.length) return '<div class="empty">Sin meses pronosticados. Agrega el primero.</div>';
+  return pronMeses.map(m=>{
+    const ingresos = (m.ingresos||[]).reduce((s,i)=>s+(i.monto||0),0);
+    const gastos   = (m.gastos||[]).reduce((s,g)=>s+(g.monto||0),0);
+    const profit   = ingresos - gastos;
+    const asignado = (m.asignaciones||[]).reduce((s,a)=>s+(a.monto||0),0);
+    const restante = profit - asignado;
+    const balColor = profit>=0?'var(--green)':'var(--red)';
+
+    const ingRows = (m.ingresos||[]).map((i,idx)=>`
+      <div class="pron-item-row">
+        <span class="pron-item-desc">${i.desc}</span>
+        <span class="pron-item-monto" style="color:var(--green)">+${fmt(i.monto)}</span>
+        <button class="pron-item-del" onclick="eliminarPronItem('${m.id}','ingresos',${idx})">✕</button>
+      </div>`).join('');
+
+    const gasRows = (m.gastos||[]).map((g,idx)=>`
+      <div class="pron-item-row">
+        <span class="pron-item-desc">${g.desc}</span>
+        <span class="pron-item-monto" style="color:var(--red)">−${fmt(g.monto)}</span>
+        <button class="pron-item-del" onclick="eliminarPronItem('${m.id}','gastos',${idx})">✕</button>
+      </div>`).join('');
+
+    const asigRows = (m.asignaciones||[]).map((a,idx)=>`
+      <div class="pron-asig-row">
+        <span class="pron-asig-label">${a.dest}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="pron-asig-monto">${fmt(a.monto)}</span>
+          <button class="pron-item-del" onclick="eliminarPronAsig('${m.id}',${idx})">✕</button>
+        </div>
+      </div>`).join('');
+
+    return `<div class="pron-mes-card" id="pm-${m.id}">
+      <div class="pron-mes-header" onclick="togglePronMes('${m.id}')">
+        <div>
+          <div class="pron-mes-nombre">${m.nombre}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Ingresos: ${fmt(ingresos)} · Gastos: ${fmt(gastos)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="pron-mes-balance" style="color:${balColor}">${profit>=0?'+':''}${fmt(profit)}</div>
+          <span class="pron-mes-chevron">▼</span>
+        </div>
+      </div>
+      <div class="pron-mes-body">
+        <div class="pron-stats">
+          <div class="stat-card" style="padding:11px">
+            <div class="stat-label">Ingresos est.</div>
+            <div class="stat-value" style="color:var(--green);font-size:18px">${fmt(ingresos)}</div>
+          </div>
+          <div class="stat-card" style="padding:11px">
+            <div class="stat-label">Gastos est.</div>
+            <div class="stat-value" style="color:var(--red);font-size:18px">${fmt(gastos)}</div>
+          </div>
+          <div class="stat-card" style="padding:11px;${profit<0?'border-color:var(--red-border)':''}">
+            <div class="stat-label">Balance</div>
+            <div class="stat-value" style="color:${balColor};font-size:18px">${fmt(profit)}</div>
+          </div>
+        </div>
+
+        <!-- INGRESOS -->
+        <div class="pron-section-label">Ingresos estimados</div>
+        ${ingRows || '<div style="font-size:12px;color:var(--text3);margin-bottom:8px">Sin ingresos.</div>'}
+        <div class="pron-add-row" style="margin-bottom:16px">
+          <input id="pi-desc-${m.id}" placeholder="Ej: Clientes, freelance...">
+          <input id="pi-monto-${m.id}" type="number" placeholder="Monto" onkeydown="if(event.key==='Enter')addPronItem('${m.id}','ingresos')">
+          <button class="calc-add-btn" onclick="addPronItem('${m.id}','ingresos')">+</button>
+        </div>
+
+        <!-- GASTOS -->
+        <div class="pron-section-label">Gastos estimados</div>
+        ${gasRows || '<div style="font-size:12px;color:var(--text3);margin-bottom:8px">Sin gastos.</div>'}
+        <div class="pron-add-row" style="margin-bottom:16px">
+          <input id="pg-desc-${m.id}" placeholder="Ej: Renta, servicios...">
+          <input id="pg-monto-${m.id}" type="number" placeholder="Monto" onkeydown="if(event.key==='Enter')addPronItem('${m.id}','gastos')">
+          <button class="calc-add-btn" style="background:var(--red-dim);border:1px solid var(--red-border);color:var(--red)" onclick="addPronItem('${m.id}','gastos')">+</button>
+        </div>
+
+        <!-- PROFIT Y ASIGNACIONES -->
+        ${profit>0?`<div class="pron-profit-box">
+          <div class="pron-profit-header">
+            <span class="pron-profit-title">✦ Profit disponible</span>
+            <span class="pron-profit-total">${fmt(profit)}</span>
+          </div>
+          ${asigRows}
+          <div class="pron-profit-restante">
+            <span>Profit restante</span>
+            <span style="color:${restante>=0?'var(--amber)':'var(--red)'}">${fmt(restante)}</span>
+          </div>
+          <div class="pron-add-row" style="margin-top:10px">
+            <input id="pa-dest-${m.id}" placeholder="Ej: Viajes, coche...">
+            <input id="pa-monto-${m.id}" type="number" placeholder="Monto" onkeydown="if(event.key==='Enter')addPronAsig('${m.id}',${profit})">
+            <button class="calc-add-btn" onclick="addPronAsig('${m.id}',${profit})">Asignar</button>
+          </div>
+        </div>` : profit<0?`<div style="background:var(--red-dim);border:1px solid var(--red-border);border-radius:var(--rs);padding:12px 16px;font-size:13px;color:var(--red);margin-top:8px">⚠ Balance negativo — los gastos superan los ingresos por ${fmt(Math.abs(profit))}</div>`:''}
+
+        <div style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <button class="action-sm danger" onclick="eliminarPronMes('${m.id}')">✕ Eliminar mes</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPronResumen(){
+  if(!pronMeses.length) return '<div class="empty">Sin meses pronosticados.</div>';
+  const totalIng  = pronMeses.reduce((s,m)=>(m.ingresos||[]).reduce((ss,i)=>ss+(i.monto||0),s),0);
+  const totalGas  = pronMeses.reduce((s,m)=>(m.gastos||[]).reduce((ss,g)=>ss+(g.monto||0),s),0);
+  const totalProfit = totalIng - totalGas;
+  const totalAsig = pronMeses.reduce((s,m)=>(m.asignaciones||[]).reduce((ss,a)=>ss+(a.monto||0),s),0);
+
+  // Asignaciones consolidadas
+  const asigMap = {};
+  pronMeses.forEach(m=>(m.asignaciones||[]).forEach(a=>{
+    asigMap[a.dest]=(asigMap[a.dest]||0)+a.monto;
+  }));
+  const asigRows = Object.entries(asigMap).sort((a,b)=>b[1]-a[1]).map(([dest,monto])=>`
+    <div class="pron-asig-row"><span class="pron-asig-label">${dest}</span><span class="pron-asig-monto">${fmt(monto)}</span></div>`).join('');
+
+  const mesRows = pronMeses.map(m=>{
+    const ing  = (m.ingresos||[]).reduce((s,i)=>s+(i.monto||0),0);
+    const gas  = (m.gastos||[]).reduce((s,g)=>s+(g.monto||0),0);
+    const prof = ing - gas;
+    return `<tr>
+      <td style="padding:10px 12px;font-weight:500">${m.nombre}</td>
+      <td style="padding:10px 12px;color:var(--green);font-weight:600">${fmt(ing)}</td>
+      <td style="padding:10px 12px;color:var(--red);font-weight:600">${fmt(gas)}</td>
+      <td style="padding:10px 12px;font-weight:600;color:${prof>=0?'var(--amber)':'var(--red)'}">${fmt(prof)}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="pron-resumen-grid">
+    <div class="stat-card"><div class="stat-label">Ingresos totales est.</div><div class="stat-value" style="color:var(--green)">${fmt(totalIng)}</div></div>
+    <div class="stat-card"><div class="stat-label">Gastos totales est.</div><div class="stat-value" style="color:var(--red)">${fmt(totalGas)}</div></div>
+    <div class="stat-card"><div class="stat-label">Profit total est.</div><div class="stat-value" style="color:var(--amber)">${fmt(totalProfit)}</div></div>
+    <div class="stat-card"><div class="stat-label">Total asignado</div><div class="stat-value" style="color:var(--blue)">${fmt(totalAsig)}</div></div>
+  </div>
+
+  ${Object.keys(asigMap).length?`<div class="pron-profit-box" style="margin-bottom:20px">
+    <div class="pron-profit-header" style="margin-bottom:10px">
+      <span class="pron-profit-title">Asignaciones del profit</span>
+      <span class="pron-profit-total">${fmt(totalAsig)}</span>
+    </div>
+    ${asigRows}
+  </div>`:''}
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr>
+        <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-bottom:1px solid var(--border)">Mes</th>
+        <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-bottom:1px solid var(--border)">Ingresos</th>
+        <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-bottom:1px solid var(--border)">Gastos</th>
+        <th style="text-align:left;padding:10px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-bottom:1px solid var(--border)">Balance</th>
+      </tr></thead>
+      <tbody>${mesRows}</tbody>
+    </table>
+  </div>`;
+}
+
+window.togglePronMes = (id) => {
+  document.getElementById('pm-'+id)?.classList.toggle('open');
+};
+
+window.openNuevoPronMes = () => {
+  const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const now = new Date();
+  const opts = Array.from({length:12},(_,i)=>{
+    const m=(now.getMonth()+1+i)%12, y=now.getFullYear()+Math.floor((now.getMonth()+1+i)/12);
+    return `<option value="${MONTHS[m]} ${y}">${MONTHS[m]} ${y}</option>`;
+  }).join('');
+  showModal(`<div class="modal-title">Nuevo mes pronosticado</div>
+    <div class="f-row"><label>Mes</label><select id="pm-sel" class="modal-select">${opts}</select></div>
+    <div class="f-row"><label>O nombre personalizado</label><input id="pm-custom" class="modal-input" placeholder="Ej: Q3 2026, Verano..."></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="crearPronMes()">Crear</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>`);
+};
+
+window.crearPronMes = async () => {
+  const nombre = document.getElementById('pm-custom')?.value.trim() || document.getElementById('pm-sel')?.value;
+  if(!nombre) return;
+  const id = Date.now().toString();
+  const obj = {nombre, ingresos:[], gastos:[], asignaciones:[], orden:Date.now()};
+  await setDoc(doc(db,'users',uid,'pronMeses',id), obj);
+  pronMeses.push({id,...obj});
+  closeModal();
+  document.getElementById('pron-meses-list').innerHTML = renderPronMeses();
+  setTimeout(()=>{ const el=document.getElementById('pm-'+id); if(el) el.classList.add('open'); },50);
+};
+
+window.addPronItem = async (mesId, tipo) => {
+  const m = pronMeses.find(x=>x.id===mesId);
+  if(!m) return;
+  const pfx = tipo==='ingresos'?'pi':'pg';
+  const desc  = document.getElementById(`${pfx}-desc-${mesId}`)?.value.trim();
+  const monto = parseFloat(document.getElementById(`${pfx}-monto-${mesId}`)?.value)||0;
+  if(!desc||!monto) return alert('Escribe descripción y monto.');
+  if(!m[tipo]) m[tipo]=[];
+  m[tipo].push({desc,monto});
+  await updateDoc(doc(db,'users',uid,'pronMeses',mesId),{[tipo]:m[tipo]});
+  const list = document.getElementById('pron-meses-list');
+  list.innerHTML = renderPronMeses();
+  setTimeout(()=>{ const el=document.getElementById('pm-'+mesId); if(el) el.classList.add('open'); },50);
+};
+
+window.eliminarPronItem = async (mesId, tipo, idx) => {
+  const m = pronMeses.find(x=>x.id===mesId);
+  if(!m) return;
+  m[tipo].splice(idx,1);
+  await updateDoc(doc(db,'users',uid,'pronMeses',mesId),{[tipo]:m[tipo]});
+  document.getElementById('pron-meses-list').innerHTML = renderPronMeses();
+  setTimeout(()=>{ const el=document.getElementById('pm-'+mesId); if(el) el.classList.add('open'); },50);
+};
+
+window.addPronAsig = async (mesId, profit) => {
+  const m = pronMeses.find(x=>x.id===mesId);
+  if(!m) return;
+  const dest  = document.getElementById(`pa-dest-${mesId}`)?.value.trim();
+  const monto = parseFloat(document.getElementById(`pa-monto-${mesId}`)?.value)||0;
+  if(!dest||!monto) return alert('Escribe destino y monto.');
+  const asignado = (m.asignaciones||[]).reduce((s,a)=>s+(a.monto||0),0);
+  if(monto > profit - asignado) return alert(`No puedes asignar más de ${fmt(profit-asignado)}`);
+  if(!m.asignaciones) m.asignaciones=[];
+  m.asignaciones.push({dest,monto});
+  await updateDoc(doc(db,'users',uid,'pronMeses',mesId),{asignaciones:m.asignaciones});
+  document.getElementById('pron-meses-list').innerHTML = renderPronMeses();
+  setTimeout(()=>{ const el=document.getElementById('pm-'+mesId); if(el) el.classList.add('open'); },50);
+};
+
+window.eliminarPronAsig = async (mesId, idx) => {
+  const m = pronMeses.find(x=>x.id===mesId);
+  if(!m) return;
+  m.asignaciones.splice(idx,1);
+  await updateDoc(doc(db,'users',uid,'pronMeses',mesId),{asignaciones:m.asignaciones});
+  document.getElementById('pron-meses-list').innerHTML = renderPronMeses();
+  setTimeout(()=>{ const el=document.getElementById('pm-'+mesId); if(el) el.classList.add('open'); },50);
+};
+
+window.eliminarPronMes = async (id) => {
+  if(!confirm('¿Eliminar este mes pronosticado?')) return;
+  await deleteDoc(doc(db,'users',uid,'pronMeses',id));
+  pronMeses = pronMeses.filter(x=>x.id!==id);
+  document.getElementById('pron-meses-list').innerHTML = renderPronMeses();
+};
+
 
 // ── FORMAT ──
 function fmt(n){return'$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
