@@ -974,40 +974,28 @@ function renderMes(){
 function renderIngresoCard(ing, data){
   const cfAmt=cfDeIngreso(ing), persAmt=personalDeIngreso(ing);
 
-  // Calcular desglose: qué gastos se cubren con este ingreso y cuánto sobra (profit)
+  // Desglose usando el mismo algoritmo que el plan de cashflow
   let desgloseHTML = '';
   if(data && cfAmt > 0){
-    // Correr el algoritmo sólo para este ingreso
-    const gastos=[...( data.gastos||[])].filter(g=>g.prioridad!=='personal').sort((a,b)=>{
-      const p={alta:0,media:1,baja:2};
-      if(a.fecha!==b.fecha) return (a.fecha||'').localeCompare(b.fecha||'');
-      return (p[a.prioridad]||1)-(p[b.prioridad]||1);
-    });
-    // Todos los ingresos CF para el plan global
-    const cfIngs=data.ingresos.filter(i=>cfDeIngreso(i)>0);
-    let incW=cfIngs.map(i=>({...i,rem:cfDeIngreso(i),allocs:[]}));
-    for(const exp of gastos){
-      let cands=incW.filter(i=>i.rem>0&&(i.fecha||'')<=(exp.fecha||''));
-      if(!cands.length) cands=incW.filter(i=>i.rem>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
-      else cands.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-      const single=cands.find(i=>i.rem>=exp.monto);
-      if(single){single.rem-=exp.monto;single.allocs.push({desc:exp.descripcion,monto:exp.monto});}
-      else{ let rem=exp.monto; for(const inc of cands){if(rem<=0)break;const take=Math.min(inc.rem,rem);inc.rem-=take;rem-=take;inc.allocs.push({desc:exp.descripcion,monto:take});} }
-    }
-    const thisInc=incW.find(i=>i.id===ing.id);
+    const incW = calcPlanAlgo(data);
+    const thisInc = incW.find(i=>i.id===ing.id);
     if(thisInc){
-      const rows = thisInc.allocs.map(a=>`
+      const rows = thisInc.allocations.map(a=>`
         <div class="ing-desglose-row">
-          <span class="ing-desglose-concepto">↓ ${a.desc}</span>
-          <span class="ing-desglose-monto" style="color:var(--red)">−${fmt(a.monto)}</span>
+          <span class="ing-desglose-concepto">
+            ${a.deficit?'⚠ ':'↓ '}${a.desc}
+            ${a.gastoPagado?' <span style="font-size:10px;color:var(--green)">✓</span>':''}
+            ${a.deficit?'<span style="font-size:10px;color:var(--red)"> (sin fondos)</span>':''}
+          </span>
+          <span class="ing-desglose-monto" style="color:${a.deficit?'var(--red)':a.gastoPagado?'var(--green)':'var(--red)'}">−${fmt(a.amount)}</span>
         </div>`).join('');
-      const profit = thisInc.rem;
+      const profit = thisInc.remaining;
       desgloseHTML = `<div class="ing-desglose">
         <div class="ing-desglose-title">Desglose del cashflow (${fmt(cfAmt)})</div>
         ${rows || '<div style="font-size:12px;color:var(--text3)">Sin gastos asignados a este ingreso.</div>'}
-        <div class="ing-desglose-row profit-row">
-          <span class="ing-desglose-concepto">✦ Profit libre</span>
-          <span class="ing-desglose-monto">${fmt(profit)}</span>
+        <div class="ing-desglose-row profit-row" style="${profit<0?'background:var(--red-dim)':''}">
+          <span class="ing-desglose-concepto" style="${profit<0?'color:var(--red)':''}">✦ ${profit>=0?'Profit libre':'Déficit'}</span>
+          <span class="ing-desglose-monto" style="color:${profit>=0?'var(--amber)':'var(--red)'}">${fmt(profit)}</span>
         </div>
       </div>`;
     }
@@ -1074,53 +1062,8 @@ function renderCashflowPlan(data){
     return (p[a.prioridad]||1)-(p[b.prioridad]||1);
   });
 
-  // incW puede tener remaining negativo (deuda contra ese ingreso)
-  let incW=cfIngresos.map(i=>({...i,cfAmount:cfDeIngreso(i),remaining:cfDeIngreso(i),allocations:[]}));
-
-  for(let exp of gastos){
-    // 1. Candidatos con saldo positivo y fecha <= gasto (llegan a tiempo)
-    let cands=incW.filter(i=>i.remaining>0&&(i.fecha||'')<=(exp.fecha||''));
-    // 2. Si no hay a tiempo, tomar el ingreso más próximo DESPUÉS de la fecha del gasto
-    if(!cands.length){
-      const posteriores=incW.filter(i=>i.remaining>0&&(i.fecha||'')>(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
-      cands=posteriores.length?posteriores:[...incW].filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
-    }
-    // 3. Si NINGÚN ingreso tiene saldo, asignar al más próximo posterior (aunque quede negativo)
-    if(!cands.length){
-      const posteriores=[...incW].filter(i=>(i.fecha||'')>=(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
-      cands=posteriores.length?[posteriores[0]]:[[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0]].filter(Boolean);
-    }
-    else cands.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-
-    // Preferir uno que cubra completo
-    const single=cands.find(i=>i.remaining>=exp.monto);
-    if(single){
-      single.remaining-=exp.monto;
-      single.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:exp.monto,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:false});
-    } else {
-      // Dividir entre los que tienen saldo, y si aún falta asignar el resto al más próximo (deficit)
-      let rem=exp.monto;
-      for(let inc of cands){
-        if(rem<=0) break;
-        if(inc.remaining>0){
-          const take=Math.min(inc.remaining,rem);
-          inc.remaining-=take; rem-=take;
-          inc.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:take,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:false});
-        }
-      }
-      if(rem>0){
-        // Asignar el faltante al ingreso más próximo POSTERIOR a la fecha del gasto
-        const posteriores=[...incW].filter(i=>(i.fecha||'')>=(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
-        const closest=posteriores[0]||[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0];
-        if(closest){
-          closest.remaining-=rem;
-          closest.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:rem,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:true});
-        }
-      }
-    }
-  }
-
-  const totalSobrante=incW.reduce((s,i)=>s+i.remaining,0);
+  const incW = calcPlanAlgo(data);
+  const totalSobrante = incW.reduce((s,i)=>s+i.remaining,0);
 
   let html=incW.map(inc=>{
     const reserved=inc.cfAmount-inc.remaining;
@@ -3942,6 +3885,44 @@ window.eliminarCalcFija = async (id) => {
   calcFijas = calcFijas.filter(x=>x.id!==id);
   renderCalculadora();
 };
+
+
+// ── ALGORITMO COMPARTIDO DE CASHFLOW ──
+function calcPlanAlgo(data){
+  const cfIngresos = data.ingresos.filter(i=>cfDeIngreso(i)>0);
+  if(!cfIngresos.length) return [];
+  const gastos = [...data.gastos].filter(g=>g.prioridad!=='personal').sort((a,b)=>{
+    const p={alta:0,media:1,baja:2};
+    if(a.fecha!==b.fecha) return (a.fecha||'').localeCompare(b.fecha||'');
+    return (p[a.prioridad]||1)-(p[b.prioridad]||1);
+  });
+  let incW = cfIngresos.map(i=>({...i,cfAmount:cfDeIngreso(i),remaining:cfDeIngreso(i),allocations:[]}));
+  for(let exp of gastos){
+    let cands=incW.filter(i=>i.remaining>0&&(i.fecha||'')<=(exp.fecha||''));
+    if(!cands.length){
+      const post=incW.filter(i=>i.remaining>0&&(i.fecha||'')>(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+      cands=post.length?post:[...incW].filter(i=>i.remaining>0).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    }
+    if(!cands.length){
+      const post=[...incW].filter(i=>(i.fecha||'')>=(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+      cands=post.length?[post[0]]:[[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0]].filter(Boolean);
+    } else cands.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+    const single=cands.find(i=>i.remaining>=exp.monto);
+    if(single){
+      single.remaining-=exp.monto;
+      single.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:exp.monto,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:false});
+    } else {
+      let rem=exp.monto;
+      for(let inc of cands){if(rem<=0)break;if(inc.remaining>0){const take=Math.min(inc.remaining,rem);inc.remaining-=take;rem-=take;inc.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:take,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:false});}}
+      if(rem>0){
+        const post=[...incW].filter(i=>(i.fecha||'')>=(exp.fecha||'')).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+        const closest=post[0]||[...incW].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''))[0];
+        if(closest){closest.remaining-=rem;closest.allocations.push({desc:exp.descripcion,fecha:exp.fecha,amount:rem,prioridad:exp.prioridad,gastoPagado:exp.pagado,deficit:true});}
+      }
+    }
+  }
+  return incW;
+}
 
 // ── FORMAT ──
 function fmt(n){return'$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
